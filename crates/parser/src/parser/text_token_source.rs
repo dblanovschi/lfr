@@ -1,4 +1,4 @@
-use syntax::{rowan::TextSize, span::Span, syntax_kind::SyntaxKind::EOF};
+use syntax::{rowan::TextSize, span::Span, syntax_kind::SyntaxKind::EOF, SyntaxKind, T};
 
 use lfr_stdx::TakeIfUnless;
 
@@ -62,43 +62,112 @@ impl TokenSource for LexerWrap {
             return NOT_FOUND;
         }
 
+        fn at_composite2(
+            tokens: &[(Token, TextSize)],
+            kind1: SyntaxKind,
+            kind2: SyntaxKind,
+        ) -> bool {
+            tokens.len() >= 2
+                && tokens[0].0.syntax_kind == kind1
+                && tokens[1].0.syntax_kind == kind2
+        }
+
+        fn at_composite3(
+            tokens: &[(Token, TextSize)],
+            kind1: SyntaxKind,
+            kind2: SyntaxKind,
+            kind3: SyntaxKind,
+        ) -> bool {
+            tokens.len() >= 3
+                && tokens[0].0.syntax_kind == kind1
+                && tokens[1].0.syntax_kind == kind2
+                && tokens[2].0.syntax_kind == kind3
+        }
+
+        fn at(tokens: &[(Token, TextSize)], kind: SyntaxKind) -> bool {
+            // TAG: composites
+            match kind {
+                T![&&] => at_composite2(tokens, T![&], T![&]),
+                T![||] => at_composite2(tokens, T![|], T![|]),
+                T![+=] => at_composite2(tokens, T![+], T![=]),
+                T![-=] => at_composite2(tokens, T![-], T![=]),
+                T![*=] => at_composite2(tokens, T![*], T![=]),
+                T![/=] => at_composite2(tokens, T![/], T![=]),
+                T![%=] => at_composite2(tokens, T![%], T![=]),
+                T![&=] => at_composite2(tokens, T![&], T![=]),
+                T![|=] => at_composite2(tokens, T![|], T![=]),
+                T![^=] => at_composite2(tokens, T![^], T![=]),
+                T![&&=] => at_composite3(tokens, T![&], T![&], T![=]),
+                T![||=] => at_composite3(tokens, T![|], T![|], T![=]),
+                T![==] => at_composite2(tokens, T![=], T![=]),
+                T![!=] => at_composite2(tokens, T![!], T![=]),
+                T![<=] => at_composite2(tokens, T![<], T![=]),
+                T![>=] => at_composite2(tokens, T![>], T![=]),
+                kind => tokens[0].0.syntax_kind == kind,
+            }
+        }
+
         match find_property {
-            FindProperty::In(kinds) => self.tokens[self.pos..]
-                .iter()
-                .enumerate()
-                .find(|&(_, &(token, _))| kinds.iter().any(|it| *it == token.syntax_kind))
-                .map_or(NOT_FOUND, |it| ForwardToken {
-                    kind: it.1 .0.syntax_kind,
-                    offset: it.0,
-                    state: self.pos,
-                }),
-            FindProperty::NotIn(kinds) => self.tokens[self.pos..]
-                .iter()
-                .enumerate()
-                .find(|&(_, &(token, _))| !kinds.iter().any(|it| *it == token.syntax_kind))
-                .map_or(NOT_FOUND, |it| ForwardToken {
-                    kind: it.1 .0.syntax_kind,
-                    offset: it.0,
-                    state: self.pos,
-                }),
-            FindProperty::KindIs(kind) => self.tokens[self.pos..]
-                .iter()
-                .enumerate()
-                .find(|&(_, &(token, _))| kind == token.syntax_kind)
-                .map_or(NOT_FOUND, |it| ForwardToken {
-                    kind: it.1 .0.syntax_kind,
-                    offset: it.0,
-                    state: self.pos,
-                }),
-            FindProperty::KindIsNot(kind) => self.tokens[self.pos..]
-                .iter()
-                .enumerate()
-                .find(|&(_, &(token, _))| kind != token.syntax_kind)
-                .map_or(NOT_FOUND, |it| ForwardToken {
-                    kind: it.1 .0.syntax_kind,
-                    offset: it.0,
-                    state: self.pos,
-                }),
+            FindProperty::In(kinds) => {
+                for tind in self.pos..self.tokens.len() {
+                    let t = &self.tokens[tind..];
+
+                    if let Some(&kind) = kinds.iter().find(|&&it| at(t, it)) {
+                        return ForwardToken {
+                            kind,
+                            offset: tind - self.pos,
+                            state: self.pos,
+                        };
+                    }
+                }
+                
+                NOT_FOUND
+            }
+            FindProperty::NotIn(kinds) => {
+                for tind in self.pos..self.tokens.len() {
+                    let t = &self.tokens[tind..];
+
+                    if let None = kinds.iter().find(|&&it| at(t, it)) {
+                        return ForwardToken {
+                            kind: t[0].0.syntax_kind,
+                            offset: tind - self.pos,
+                            state: self.pos,
+                        };
+                    }
+                }
+                
+                NOT_FOUND
+            },
+            FindProperty::KindIs(kind) => {
+                for tind in self.pos..self.tokens.len() {
+                    let t = &self.tokens[tind..];
+
+                    if at(t, kind) {
+                        return ForwardToken {
+                            kind: t[0].0.syntax_kind,
+                            offset: tind - self.pos,
+                            state: self.pos,
+                        };
+                    }
+                }
+                
+                NOT_FOUND
+            },
+            FindProperty::KindIsNot(kind) => {
+                for tind in self.pos..self.tokens.len() {
+                    let t = &self.tokens[tind..];
+
+                    if !at(t, kind) {
+                        return ForwardToken {
+                            kind: t[0].0.syntax_kind,
+                            offset: tind - self.pos,
+                            state: self.pos,
+                        };
+                    }
+                }
+                
+                NOT_FOUND
+            },
         }
     }
 

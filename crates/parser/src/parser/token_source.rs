@@ -30,6 +30,12 @@ impl Default for ForwardToken {
     }
 }
 
+impl PartialEq<SyntaxKind> for ForwardToken {
+    fn eq(&self, kind: &SyntaxKind) -> bool {
+        self.kind == *kind
+    }
+}
+
 /// Describes a query to the token source.
 #[derive(Copy, Clone, Debug)]
 pub enum FindProperty<'a> {

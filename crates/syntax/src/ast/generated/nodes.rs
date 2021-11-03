@@ -50,15 +50,6 @@ impl Name {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct NameIdent {
-    pub(crate) syntax: SyntaxNode,
-}
-impl NameIdent {
-    pub fn ident_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![ident])
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct LitVal {
     pub(crate) syntax: SyntaxNode,
 }
@@ -71,8 +62,8 @@ impl FnDef {
     pub fn fn_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![fn])
     }
-    pub fn name_ident(&self) -> Option<NameIdent> {
-        support::child(&self.syntax)
+    pub fn ident_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, T![ident])
     }
     pub fn l_paren_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T!['('])
@@ -107,8 +98,8 @@ impl DeclarationStmt {
     pub fn let_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![let])
     }
-    pub fn name_ident(&self) -> Option<NameIdent> {
-        support::child(&self.syntax)
+    pub fn ident_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, T![ident])
     }
     pub fn eq_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T ! [=])
@@ -187,7 +178,7 @@ pub struct PrimaryExpr {
     pub(crate) syntax: SyntaxNode,
 }
 impl PrimaryExpr {
-    pub fn primary_expr_inner(&self) -> Option<PrimaryExprInner> {
+    pub fn inner(&self) -> Option<PrimaryExprInner> {
         support::child(&self.syntax)
     }
 }
@@ -267,6 +258,24 @@ impl FnCallArgs {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct MethodCallExpr {
+    pub(crate) syntax: SyntaxNode,
+}
+impl MethodCallExpr {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+    pub fn dot_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, T ! [.])
+    }
+    pub fn ident_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, T![ident])
+    }
+    pub fn fn_call_args(&self) -> Option<FnCallArgs> {
+        support::child(&self.syntax)
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PrefixUnaryExpr {
     pub(crate) syntax: SyntaxNode,
 }
@@ -300,6 +309,21 @@ impl IndexExprBrackets {
     }
     pub fn r_brack_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![']'])
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct MemberAccessExpr {
+    pub(crate) syntax: SyntaxNode,
+}
+impl MemberAccessExpr {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+    pub fn dot_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, T ! [.])
+    }
+    pub fn ident_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, T![ident])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -352,8 +376,8 @@ pub struct ForInExpr {
     pub(crate) syntax: SyntaxNode,
 }
 impl ForInExpr {
-    pub fn name_ident(&self) -> Option<NameIdent> {
-        support::child(&self.syntax)
+    pub fn ident_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, T![ident])
     }
     pub fn in_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![in])
@@ -369,6 +393,8 @@ pub enum Expr {
     PrefixUnaryExpr(PrefixUnaryExpr),
     FnCallExpr(FnCallExpr),
     IndexExpr(IndexExpr),
+    MemberAccessExpr(MemberAccessExpr),
+    MethodCallExpr(MethodCallExpr),
     FnDef(FnDef),
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -416,21 +442,6 @@ impl AstNode for Stmt {
 impl AstNode for Name {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == NAME
-    }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if Self::can_cast(syntax.kind()) {
-            Some(Self { syntax })
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
-}
-impl AstNode for NameIdent {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == NAME_IDENT
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
@@ -683,6 +694,21 @@ impl AstNode for FnCallArgs {
         &self.syntax
     }
 }
+impl AstNode for MethodCallExpr {
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == METHOD_CALL_EXPR
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+}
 impl AstNode for PrefixUnaryExpr {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == PREFIX_UNARY_EXPR
@@ -716,6 +742,21 @@ impl AstNode for IndexExpr {
 impl AstNode for IndexExprBrackets {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == INDEX_EXPR_BRACKETS
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+}
+impl AstNode for MemberAccessExpr {
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == MEMBER_ACCESS_EXPR
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
@@ -813,6 +854,16 @@ impl From<IndexExpr> for Expr {
         Expr::IndexExpr(node)
     }
 }
+impl From<MemberAccessExpr> for Expr {
+    fn from(node: MemberAccessExpr) -> Expr {
+        Expr::MemberAccessExpr(node)
+    }
+}
+impl From<MethodCallExpr> for Expr {
+    fn from(node: MethodCallExpr) -> Expr {
+        Expr::MethodCallExpr(node)
+    }
+}
 impl From<FnDef> for Expr {
     fn from(node: FnDef) -> Expr {
         Expr::FnDef(node)
@@ -821,9 +872,8 @@ impl From<FnDef> for Expr {
 impl AstNode for Expr {
     fn can_cast(kind: SyntaxKind) -> bool {
         match kind {
-            PRIMARY_EXPR | BIN_EXPR | PREFIX_UNARY_EXPR | FN_CALL_EXPR | INDEX_EXPR | FN_DEF => {
-                true
-            }
+            PRIMARY_EXPR | BIN_EXPR | PREFIX_UNARY_EXPR | FN_CALL_EXPR | INDEX_EXPR
+            | MEMBER_ACCESS_EXPR | METHOD_CALL_EXPR | FN_DEF => true,
             _ => false,
         }
     }
@@ -834,6 +884,8 @@ impl AstNode for Expr {
             PREFIX_UNARY_EXPR => Expr::PrefixUnaryExpr(PrefixUnaryExpr { syntax }),
             FN_CALL_EXPR => Expr::FnCallExpr(FnCallExpr { syntax }),
             INDEX_EXPR => Expr::IndexExpr(IndexExpr { syntax }),
+            MEMBER_ACCESS_EXPR => Expr::MemberAccessExpr(MemberAccessExpr { syntax }),
+            METHOD_CALL_EXPR => Expr::MethodCallExpr(MethodCallExpr { syntax }),
             FN_DEF => Expr::FnDef(FnDef { syntax }),
             _ => return None,
         };
@@ -846,6 +898,8 @@ impl AstNode for Expr {
             Expr::PrefixUnaryExpr(it) => &it.syntax,
             Expr::FnCallExpr(it) => &it.syntax,
             Expr::IndexExpr(it) => &it.syntax,
+            Expr::MemberAccessExpr(it) => &it.syntax,
+            Expr::MethodCallExpr(it) => &it.syntax,
             Expr::FnDef(it) => &it.syntax,
         }
     }
@@ -957,11 +1011,6 @@ impl std::fmt::Display for Name {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for NameIdent {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
 impl std::fmt::Display for LitVal {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
@@ -1042,6 +1091,11 @@ impl std::fmt::Display for FnCallArgs {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
+impl std::fmt::Display for MethodCallExpr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
 impl std::fmt::Display for PrefixUnaryExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
@@ -1053,6 +1107,11 @@ impl std::fmt::Display for IndexExpr {
     }
 }
 impl std::fmt::Display for IndexExprBrackets {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for MemberAccessExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

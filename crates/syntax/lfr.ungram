@@ -3,13 +3,11 @@ Root = Stmt*
 Name =
   'ident' | 'self'
 
-NameIdent = 'ident'
-
 LitVal =
   'string' | 'int_number'
 
 FnDef =
-  'fn' NameIdent '(' ')' Block
+  'fn' 'ident' '(' ')' Block
 
 Block = '{' Stmt* '}'
 
@@ -25,7 +23,7 @@ BinExpr =
     '+' | '-' | '*' | '/' | '%'
     | '&' | '|' | '^'
     | '&&' | '||'
-    | '+=' | '-=' | '*=' | '/=' | '%='
+    | '=' | '+=' | '-=' | '*=' | '/=' | '%='
     | '&=' | '|=' | '^='
     | '&&=' | '||='
     | '==' | '!=' | '<' | '>' | '<=' | '>='
@@ -38,7 +36,7 @@ TupleExpr =
 ArrExpr =
   '[' (Expr (',' Expr)* ','?)? ']'
 
-PrimaryExpr = PrimaryExprInner
+PrimaryExpr = inner: PrimaryExprInner
 
 PrimaryExprInner =
   TupleExpr
@@ -52,6 +50,7 @@ PrimaryExprInner =
 | ReturnStmt
 
 FnCallExpr = Expr FnCallArgs
+MethodCallExpr = Expr '.' 'ident' FnCallArgs
 
 FnCallArgs = '(' (Expr (',' Expr)* ','?)? ')'
 
@@ -65,12 +64,16 @@ IndexExpr = Expr IndexExprBrackets
 
 IndexExprBrackets = '[' Expr ']'
 
+MemberAccessExpr = Expr '.' 'ident'
+
 Expr =
   PrimaryExpr
 | BinExpr
 | PrefixUnaryExpr
 | FnCallExpr
 | IndexExpr
+| MemberAccessExpr
+| MethodCallExpr
 | FnDef
 
 IfBranch =
@@ -92,7 +95,7 @@ ForStmt =
   'for' ForInExpr Block
 
 ForInExpr =
-  NameIdent 'in' Expr
+  'ident' 'in' Expr
 
 BreakStmt =
   'break' Expr?
@@ -104,4 +107,4 @@ ReturnStmt =
   'return' Expr?
 
 DeclarationStmt =
-  'let' NameIdent '=' Expr
+  'let' 'ident' '=' Expr

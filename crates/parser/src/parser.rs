@@ -46,6 +46,7 @@ impl<'ts> Parser<'ts> {
     fn parse(&mut self) {
         let marker = self.start();
         loop {
+            self.skip_newlines();
             if self.at(EOF) {
                 break;
             }
@@ -57,13 +58,42 @@ impl<'ts> Parser<'ts> {
 
     #[inline(always)]
     fn at(&self, kind: SyntaxKind) -> bool {
-        self.current() == kind
+        // TAG: composites
+        match kind {
+            T![&&] => self.at_composite2(T![&], T![&]),
+            T![||] => self.at_composite2(T![|], T![|]),
+            T![+=] => self.at_composite2(T![+], T![=]),
+            T![-=] => self.at_composite2(T![-], T![=]),
+            T![*=] => self.at_composite2(T![*], T![=]),
+            T![/=] => self.at_composite2(T![/], T![=]),
+            T![%=] => self.at_composite2(T![%], T![=]),
+            T![&=] => self.at_composite2(T![&], T![=]),
+            T![|=] => self.at_composite2(T![|], T![=]),
+            T![^=] => self.at_composite2(T![^], T![=]),
+            T![&&=] => self.at_composite3(T![&], T![&], T![=]),
+            T![||=] => self.at_composite3(T![|], T![|], T![=]),
+            T![==] => self.at_composite2(T![=], T![=]),
+            T![!=] => self.at_composite2(T![!], T![=]),
+            T![<=] => self.at_composite2(T![<], T![=]),
+            T![>=] => self.at_composite2(T![>], T![=]),
+            kind => self.current() == kind,
+        }
+    }
+
+    fn at_composite2(&self, kind1: SyntaxKind, kind2: SyntaxKind) -> bool {
+        self.current() == kind1 && self.nth(1) == kind2
+    }
+
+    fn at_composite3(&self, kind1: SyntaxKind, kind2: SyntaxKind, kind3: SyntaxKind) -> bool {
+        self.current() == kind1 && self.nth(1) == kind2 && self.nth(2) == kind3
     }
 
     #[inline(always)]
-    fn at_any<const N: usize>(&self, kinds: [SyntaxKind; N]) -> bool {
-        let current = self.current();
-        std::array::IntoIter::new(kinds).any(|it| it == current)
+    fn at_any<I>(&self, kinds: I) -> Option<SyntaxKind>
+    where
+        I: IntoIterator<Item = SyntaxKind>,
+    {
+        kinds.into_iter().find(|it| self.at(*it))
     }
 
     #[inline(always)]
@@ -78,10 +108,11 @@ impl<'ts> Parser<'ts> {
             return;
         }
 
-        self.do_bump(kind, 1);
+        self.do_bump(kind, Parser::sk_raw_tokens(kind));
     }
 
     fn do_bump(&mut self, kind: SyntaxKind, n_raw_tokens: u8) {
+        assert!(n_raw_tokens <= 3);
         for _ in 0..n_raw_tokens {
             self.source.bump();
         }
@@ -102,9 +133,46 @@ impl<'ts> Parser<'ts> {
     }
 
     #[inline(always)]
+    fn sk_raw_tokens(kind: SyntaxKind) -> u8 {
+        // TAG: composites
+        match kind {
+            T![&&] => 2,
+            T![||] => 2,
+            T![+=] => 2,
+            T![-=] => 2,
+            T![*=] => 2,
+            T![/=] => 2,
+            T![%=] => 2,
+            T![&=] => 2,
+            T![|=] => 2,
+            T![^=] => 2,
+            T![&&=] => 3,
+            T![||=] => 3,
+            T![==] => 2,
+            T![!=] => 2,
+            T![<=] => 2,
+            T![>=] => 2,
+            _ => 1,
+        }
+    }
+
+    #[inline(always)]
     fn eat(&mut self, kind: SyntaxKind) -> bool {
         if self.at(kind) {
-            self.do_bump(kind, 1);
+            self.do_bump(kind, Parser::sk_raw_tokens(kind));
+            true
+        } else {
+            false
+        }
+    }
+
+    #[inline(always)]
+    fn eat_any<I>(&mut self, kinds: I) -> bool
+    where
+        I: IntoIterator<Item = SyntaxKind>,
+    {
+        if let Some(kind) = self.at_any(kinds) {
+            self.do_bump(kind, Parser::sk_raw_tokens(kind));
             true
         } else {
             false
@@ -157,13 +225,13 @@ impl<'ts> Parser<'ts> {
     }
 
     #[inline(always)]
-    fn bump_to_if_next_non_newline_is_any<const KINDS_SIZE: usize>(
-        &mut self,
-        kinds: [SyntaxKind; KINDS_SIZE],
-    ) -> bool {
+    fn bump_to_if_next_non_newline_is_any<I>(&mut self, kinds: I) -> bool
+    where
+        I: IntoIterator<Item = SyntaxKind>,
+    {
         let mut tk = ForwardToken::default();
         let k = self.next_not_newline().copy_to(&mut tk).kind;
-        if std::array::IntoIter::new(kinds).any(|it| it == k) {
+        if kinds.into_iter().any(|it| it == k) {
             self.bump_to(tk);
             true
         } else {
@@ -182,7 +250,7 @@ impl<'ts> Parser<'ts> {
     fn unexpected(&mut self) {
         let current = self.current();
         if current != EOF {
-            self.do_bump(current, 1);
+            self.do_bump(current, Parser::sk_raw_tokens(current));
         }
 
         self.error(format!("Unexpected {:?}", current));
@@ -330,11 +398,14 @@ fn parse_primary(p: &mut Parser) -> CompletedMarker {
         parse_conditional(p);
     } else if is_expr_block_start(p) {
         parse_expr_block(p);
-    } else if p.at_any([
-        T![int_number],
-        // T![float_number],
-        T![ident],
-    ]) {
+    } else if p
+        .at_any([
+            T![int_number],
+            // T![float_number],
+            T![ident],
+        ])
+        .is_some()
+    {
         p.bump_any();
     } else if is_string_lit(p) {
         parse_string(p);
@@ -346,7 +417,7 @@ fn parse_primary(p: &mut Parser) -> CompletedMarker {
 }
 
 fn is_string_lit(p: &mut Parser) -> bool {
-    p.at_any([T![str], T![multiline_str]])
+    p.at_any([T![str], T![multiline_str]]).is_some()
 }
 
 fn parse_string(p: &mut Parser) {
@@ -366,7 +437,7 @@ fn parse_tt(
     p.bump(start_tok);
 
     p.skip_newlines();
-    while !p.at_any([EOF, end_tok]) {
+    while !p.at_any([EOF, end_tok]).is_some() {
         f(p);
 
         if let Some(separator) = separator {
@@ -396,13 +467,35 @@ fn parse_precedence_1_expr(p: &mut Parser) -> CompletedMarker {
     // x = a
     // [1]
 
-    while p.at_any([T!['('], T!['[']]) {
-        if p.at(T!['(']) {
+    loop {
+        if let Some(kind) = p.at_any([T!['('], T!['[']]) {
+            if kind == T!['('] {
+                let new_marker = marker.precede(p);
+                marker = parse_f_call(p, new_marker);
+            } else if kind == T!['['] {
+                let new_marker = marker.precede(p);
+                marker = parse_index_expr(p, new_marker);
+            } else if kind == T![.] {
+                let new_marker = marker.precede(p);
+                marker = parse_member_expr(p, new_marker);
+
+                if p.at(T!['(']) {
+                    let m = marker.undo_completion(p);
+
+                    marker = parse_method_call(p, m);
+                }
+            }
+        } else if p.bump_to_if_next_non_newline_is(T![.]) {
             let new_marker = marker.precede(p);
-            marker = parse_f_call(p, new_marker);
-        } else if p.at(T!['[']) {
-            let new_marker = marker.precede(p);
-            marker = parse_index_expr(p, new_marker);
+            marker = parse_member_expr(p, new_marker);
+
+            if p.at(T!['(']) {
+                let m = marker.undo_completion(p);
+
+                marker = parse_method_call(p, m);
+            }
+        } else {
+            break;
         }
     }
 
@@ -442,11 +535,24 @@ fn parse_index_expr(p: &mut Parser, marker: Marker) -> CompletedMarker {
     marker.complete(p, INDEX_EXPR)
 }
 
+fn parse_member_expr(p: &mut Parser, marker: Marker) -> CompletedMarker {
+    p.bump(T![.]);
+    p.expect(T![ident]);
+
+    marker.complete(p, MEMBER_ACCESS_EXPR)
+}
+
+fn parse_method_call(p: &mut Parser, marker: Marker) -> CompletedMarker {
+    parse_tt(p, FN_CALL_ARGS, T!['('], Some(T![,]), T![')'], parse_farg);
+
+    marker.complete(p, METHOD_CALL_EXPR)
+}
+
 fn parse_precedence_2_expr(p: &mut Parser) -> CompletedMarker {
     p.skip_newlines();
-    if p.at_any([T![+], T![-], T![!]]) {
+    if let Some(kind) = p.at_any([T![+], T![-], T![!]]) {
         let marker = p.start();
-        p.bump_any();
+        p.bump(kind);
         parse_precedence_2_expr(p);
         marker.complete(p, PREFIX_UNARY_EXPR)
     } else {
@@ -454,11 +560,14 @@ fn parse_precedence_2_expr(p: &mut Parser) -> CompletedMarker {
     }
 }
 
-fn parse_infix_binop<const N: usize>(
+fn parse_infix_binop<I>(
     p: &mut Parser,
-    ops: [SyntaxKind; N],
+    ops: I,
     mut lower: impl FnMut(&mut Parser) -> CompletedMarker,
-) -> CompletedMarker {
+) -> CompletedMarker
+where
+    I: IntoIterator<Item = SyntaxKind> + Copy,
+{
     p.skip_newlines();
     let mut completed = lower(p);
 
@@ -482,9 +591,9 @@ fn parse_infix_binop<const N: usize>(
     // * 6
     // % 78
 
-    while p.bump_to_if_next_non_newline_is_any(ops) {
+    while let Some(kind) = p.at_any(ops) {
         let prec = completed.precede(p);
-        p.bump_any();
+        p.bump(kind);
         lower(p);
 
         completed = prec.complete(p, BIN_EXPR);
@@ -670,9 +779,8 @@ fn parse_while(p: &mut Parser) -> CompletedMarker {
     marker.complete(p, FOR_STMT)
 }
 
-
 fn is_control_stmt(p: &mut Parser) -> bool {
-    p.at_any([T![continue], T![break], T![return]])
+    p.at_any([T![continue], T![break], T![return]]).is_some()
 }
 
 fn parse_control_stmt(p: &mut Parser) -> CompletedMarker {

@@ -21,16 +21,6 @@ pub enum Tk {
     BlockComment,
     #[regex(r#"[ \t\r]+"#)]
     Whitespace,
-    #[token("+=")]
-    PlusEq,
-    #[token("-=")]
-    MinusEq,
-    #[token("*=")]
-    MulEq,
-    #[token("/=")]
-    DivEq,
-    #[token("%=")]
-    ModEq,
     #[token("+")]
     Plus,
     #[token("-")]
@@ -41,20 +31,14 @@ pub enum Tk {
     Slash,
     #[token("%")]
     Percent,
-    #[token("==")]
-    EqEq,
-    #[token(">=")]
-    GreaterEq,
     #[token(">")]
-    Greater,
-    #[token("<=")]
-    LessEq,
+    RAngle,
     #[token("<")]
-    Less,
+    LAngle,
     #[token("=")]
     Eq,
-    #[token("!=")]
-    NotEq,
+    #[token("!")]
+    Bang,
     #[token("(")]
     LParen,
     #[token(")")]
@@ -116,23 +100,15 @@ impl From<Tk> for SyntaxKind {
             Tk::Comment => T![comment],
             Tk::BlockComment => T![block_comment],
             Tk::Whitespace => T![whitespace],
-            Tk::PlusEq => T ! [+=],
-            Tk::MinusEq => T ! [-=],
-            Tk::MulEq => T ! [*=],
-            Tk::DivEq => T ! [/=],
-            Tk::ModEq => T ! [%=],
             Tk::Plus => T ! [+],
             Tk::Minus => T ! [-],
             Tk::Asterisk => T ! [*],
             Tk::Slash => T ! [/],
             Tk::Percent => T ! [%],
-            Tk::EqEq => T ! [==],
-            Tk::GreaterEq => T ! [>=],
-            Tk::Greater => T ! [>],
-            Tk::LessEq => T ! [<=],
-            Tk::Less => T ! [<],
+            Tk::RAngle => T ! [>],
+            Tk::LAngle => T ! [<],
             Tk::Eq => T ! [=],
-            Tk::NotEq => T ! [!=],
+            Tk::Bang => T ! [!],
             Tk::LParen => T!['('],
             Tk::RParen => T![')'],
             Tk::LBracket => T!['['],
