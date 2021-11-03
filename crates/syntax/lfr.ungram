@@ -1,0 +1,107 @@
+Root = Stmt*
+
+Name =
+  'ident' | 'self'
+
+NameIdent = 'ident'
+
+LitVal =
+  'string' | 'int_number'
+
+FnDef =
+  'fn' NameIdent '(' ')' Block
+
+Block = '{' Stmt* '}'
+
+Stmt =
+  Expr ';'?
+| DeclarationStmt ';'?
+| WhileStmt
+| ForStmt
+
+BinExpr =
+  lhs: Expr
+  op: (
+    '+' | '-' | '*' | '/' | '%'
+    | '&' | '|' | '^'
+    | '&&' | '||'
+    | '+=' | '-=' | '*=' | '/=' | '%='
+    | '&=' | '|=' | '^='
+    | '&&=' | '||='
+    | '==' | '!=' | '<' | '>' | '<=' | '>='
+  )
+  rhs: Expr
+
+TupleExpr =
+  '(' (Expr (',' Expr)* ','?)? ')'
+
+ArrExpr =
+  '[' (Expr (',' Expr)* ','?)? ']'
+
+PrimaryExpr = PrimaryExprInner
+
+PrimaryExprInner =
+  TupleExpr
+| ArrExpr
+| Block
+| Name
+| LitVal
+| IfExpr
+| BreakStmt
+| ContinueStmt
+| ReturnStmt
+
+FnCallExpr = Expr FnCallArgs
+
+FnCallArgs = '(' (Expr (',' Expr)* ','?)? ')'
+
+PrefixUnaryExpr =
+  op: (
+    '+' | '-' | '!' | '~'
+  )
+  Expr
+
+IndexExpr = Expr IndexExprBrackets
+
+IndexExprBrackets = '[' Expr ']'
+
+Expr =
+  PrimaryExpr
+| BinExpr
+| PrefixUnaryExpr
+| FnCallExpr
+| IndexExpr
+| FnDef
+
+IfBranch =
+  'if' Expr Block
+
+ElseIfBranch =
+  'else' 'if' Expr Block
+
+ElseBranch =
+  'else' Block
+
+IfExpr =
+  IfBranch ElseIfBranch* ElseBranch?
+
+WhileStmt =
+  'while' Expr Block
+
+ForStmt =
+  'for' ForInExpr Block
+
+ForInExpr =
+  NameIdent 'in' Expr
+
+BreakStmt =
+  'break' Expr?
+
+ContinueStmt =
+  'continue'
+
+ReturnStmt =
+  'return' Expr?
+
+DeclarationStmt =
+  'let' NameIdent '=' Expr
