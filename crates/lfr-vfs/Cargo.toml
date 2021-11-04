@@ -1,12 +1,10 @@
 [package]
-name = "lfr"
+name = "lfr-vfs"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-indoc = "1.0"
-better-panic = "0.2"
-
-lfr-parser = {path = "../lfr-parser"}
+salsa = "0.17.0-pre.2"
+notify = "4.0.15"

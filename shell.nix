@@ -19,4 +19,8 @@ thor.rust.mkRustShell {
   extraBuildInputs = [
     pkgs.nixpkgs-fmt
   ];
+
+  cargoAliases = {
+    xtask = "run --bin xtask --";
+  };
 }

@@ -1,5 +1,4 @@
 {
-    "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
     "rust-analyzer.procMacro.enable": true,
     "[rust]": {
         "editor.tabSize": 4,
@@ -9,5 +8,7 @@
             "comments": false,
             "strings": false
         }
-    }
+    },
+    "nixEnvSelector.suggestion": false,
+    "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix"
 }

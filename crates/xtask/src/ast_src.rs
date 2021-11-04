@@ -54,7 +54,7 @@ pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
     ],
     keywords: &[
         "fn", "self", "while", "for", "in", "continue", "break", "return", "if", "else", "let",
-        "true", "false",
+        "true", "false", "import", "as"
     ],
     contextual_keywords: &[],
     literals: &[
@@ -76,6 +76,8 @@ pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
     ],
     nodes: &[
         "ROOT",
+        "IMPORT_STMT",
+        "IMPORT_TARGET",
         "NAME",
         "NAME_IDENT",
         "LIT_VAL",

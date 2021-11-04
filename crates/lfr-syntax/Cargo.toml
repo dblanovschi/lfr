@@ -1,12 +1,9 @@
 [package]
-name = "lfr"
+name = "lfr-syntax"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-indoc = "1.0"
-better-panic = "0.2"
-
-lfr-parser = {path = "../lfr-parser"}
+rowan = "0.14"

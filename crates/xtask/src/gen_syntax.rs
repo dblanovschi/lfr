@@ -12,22 +12,22 @@ use crate::ast_src::{AstEnumSrc, AstNodeSrc, AstSrc, Cardinality, Field, KindsSr
 
 pub fn gen_syntax() {
     let syntax_kinds = generate_syntax_kinds(KINDS_SRC);
-    let syntax_kinds_file = cg::ws_path!("crates/syntax/src/syntax_kind/generated.rs");
+    let syntax_kinds_file = cg::ws_path!("crates/lfr-syntax/src/syntax_kind/generated.rs");
     cg::ensure_file_contents(&syntax_kinds_file, &syntax_kinds);
     cg::reformat(&syntax_kinds_file);
 
-    let grammar = cg::read_file(cg::ws_path!("crates/syntax/lfr.ungram"))
+    let grammar = cg::read_file(cg::ws_path!("crates/lfr-syntax/lfr.ungram"))
         .parse()
         .unwrap();
     let ast = lower(&grammar);
 
     let ast_tokens = generate_tokens(&ast);
-    let ast_tokens_file = cg::ws_path!("crates/syntax/src/ast/generated/tokens.rs");
+    let ast_tokens_file = cg::ws_path!("crates/lfr-syntax/src/ast/generated/tokens.rs");
     cg::ensure_file_contents(&ast_tokens_file, &ast_tokens);
     cg::reformat(&ast_tokens_file);
 
     let ast_nodes = generate_nodes(KINDS_SRC, &ast);
-    let ast_nodes_file = cg::ws_path!("crates/syntax/src/ast/generated/nodes.rs");
+    let ast_nodes_file = cg::ws_path!("crates/lfr-syntax/src/ast/generated/nodes.rs");
     cg::ensure_file_contents(&ast_nodes_file, &ast_nodes);
     cg::reformat(&ast_nodes_file);
 }
