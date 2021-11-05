@@ -1,5 +1,5 @@
-use lfr_syntax::{rowan::TextSize, syntax_kind::SyntaxKind};
-
+use lfr_syntax::rowan::TextSize;
+use lfr_syntax::syntax_kind::SyntaxKind;
 
 /// A structure to hold data about a forward token,
 /// resulted from a query like "find the next token that is not a newline".

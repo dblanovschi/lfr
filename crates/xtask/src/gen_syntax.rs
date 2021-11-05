@@ -1,18 +1,19 @@
-use std::{
-    collections::{BTreeSet, HashSet},
-    fmt::Write,
-};
+use std::collections::{BTreeSet, HashSet};
+use std::fmt::Write;
 
 use itertools::Itertools;
 use proc_macro2::{Punct, Spacing};
 use quote::{format_ident, quote};
 use ungrammar::{Grammar, Rule};
 
-use crate::ast_src::{AstEnumSrc, AstNodeSrc, AstSrc, Cardinality, Field, KindsSrc, KINDS_SRC};
+use crate::ast_src::{
+    AstEnumSrc, AstNodeSrc, AstSrc, Cardinality, Field, KindsSrc, KINDS_SRC,
+};
 
 pub fn gen_syntax() {
     let syntax_kinds = generate_syntax_kinds(KINDS_SRC);
-    let syntax_kinds_file = cg::ws_path!("crates/lfr-syntax/src/syntax_kind/generated.rs");
+    let syntax_kinds_file =
+        cg::ws_path!("crates/lfr-syntax/src/syntax_kind/generated.rs");
     cg::ensure_file_contents(&syntax_kinds_file, &syntax_kinds);
     cg::reformat(&syntax_kinds_file);
 
@@ -22,12 +23,14 @@ pub fn gen_syntax() {
     let ast = lower(&grammar);
 
     let ast_tokens = generate_tokens(&ast);
-    let ast_tokens_file = cg::ws_path!("crates/lfr-syntax/src/ast/generated/tokens.rs");
+    let ast_tokens_file =
+        cg::ws_path!("crates/lfr-syntax/src/ast/generated/tokens.rs");
     cg::ensure_file_contents(&ast_tokens_file, &ast_tokens);
     cg::reformat(&ast_tokens_file);
 
     let ast_nodes = generate_nodes(KINDS_SRC, &ast);
-    let ast_nodes_file = cg::ws_path!("crates/lfr-syntax/src/ast/generated/nodes.rs");
+    let ast_nodes_file =
+        cg::ws_path!("crates/lfr-syntax/src/ast/generated/nodes.rs");
     cg::ensure_file_contents(&ast_nodes_file, &ast_nodes);
     cg::reformat(&ast_nodes_file);
 }
@@ -147,7 +150,9 @@ fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> String {
             let name = format_ident!("{}", en.name);
             let kinds: Vec<_> = variants
                 .iter()
-                .map(|name| format_ident!("{}", to_upper_snake_case(&name.to_string())))
+                .map(|name| {
+                    format_ident!("{}", to_upper_snake_case(&name.to_string()))
+                })
                 .collect();
             let traits = en.traits.iter().map(|trait_name| {
                 let trait_name = format_ident!("{}", trait_name);
@@ -329,12 +334,15 @@ fn write_doc_comment(contents: &[String], dest: &mut String) {
 }
 
 fn generate_syntax_kinds(grammar: KindsSrc<'_>) -> String {
-    let (single_byte_tokens_values, single_byte_tokens): (Vec<_>, Vec<_>) = grammar
-        .punct
-        .iter()
-        .filter(|(token, _name)| token.len() == 1)
-        .map(|(token, name)| (token.chars().next().unwrap(), format_ident!("{}", name)))
-        .unzip();
+    let (single_byte_tokens_values, single_byte_tokens): (Vec<_>, Vec<_>) =
+        grammar
+            .punct
+            .iter()
+            .filter(|(token, _name)| token.len() == 1)
+            .map(|(token, name)| {
+                (token.chars().next().unwrap(), format_ident!("{}", name))
+            })
+            .unzip();
 
     let punctuation_values = grammar.punct.iter().map(|(token, _name)| {
         if "{}[]()".contains(token) {
@@ -361,7 +369,8 @@ fn generate_syntax_kinds(grammar: KindsSrc<'_>) -> String {
         .iter()
         .chain(grammar.contextual_keywords.iter())
         .collect::<Vec<_>>();
-    let all_keywords_idents = all_keywords_values.iter().map(|kw| format_ident!("{}", kw));
+    let all_keywords_idents =
+        all_keywords_values.iter().map(|kw| format_ident!("{}", kw));
     let all_keywords = all_keywords_values
         .iter()
         .map(|name| format_ident!("{}_KW", to_upper_snake_case(name)))
@@ -396,7 +405,7 @@ fn generate_syntax_kinds(grammar: KindsSrc<'_>) -> String {
             TOMBSTONE,
             #[doc(hidden)]
             EOF,
-            
+
             #(#punctuation,)*
             #(#all_keywords,)*
             #(#literals,)*
@@ -525,6 +534,7 @@ impl Field {
             }
         )
     }
+
     fn token_kind(&self) -> Option<proc_macro2::TokenStream> {
         match self {
             Field::Token(token) => {
@@ -534,6 +544,7 @@ impl Field {
             _ => None,
         }
     }
+
     fn method_name(&self) -> proc_macro2::Ident {
         match self {
             Field::Token(name) => {
@@ -550,6 +561,7 @@ impl Field {
                     ">" => "r_angle",
                     "." => "dot",
                     ":" => "colon",
+                    "::" => "colon2",
                     "?" => "qmark",
                     "=" => "eq",
                     "+" => "plus",
@@ -590,6 +602,7 @@ impl Field {
             }
         }
     }
+
     fn ty(&self) -> proc_macro2::Ident {
         match self {
             Field::Token(_) => format_ident!("SyntaxToken"),
@@ -600,7 +613,8 @@ impl Field {
 
 fn lower(grammar: &Grammar) -> AstSrc {
     let mut res = AstSrc {
-        tokens: "Whitespace Comment BlockComment Str MultilineStr IntNumber FloatNumber Ident"
+        tokens: "Whitespace Comment BlockComment Str MultilineStr IntNumber \
+                 FloatNumber Ident"
             .split_ascii_whitespace()
             .map(|it| it.to_string())
             .collect::<Vec<_>>(),
@@ -658,7 +672,12 @@ fn lower_enum(grammar: &Grammar, rule: &Rule) -> Option<Vec<String>> {
     Some(variants)
 }
 
-fn lower_rule(acc: &mut Vec<Field>, grammar: &Grammar, label: Option<&String>, rule: &Rule) {
+fn lower_rule(
+    acc: &mut Vec<Field>,
+    grammar: &Grammar,
+    label: Option<&String>,
+    rule: &Rule,
+) {
     if lower_comma_list(acc, grammar, label, rule) {
         return;
     }
@@ -666,7 +685,8 @@ fn lower_rule(acc: &mut Vec<Field>, grammar: &Grammar, label: Option<&String>, r
     match rule {
         Rule::Node(node) => {
             let ty = grammar[*node].name.clone();
-            let name = label.cloned().unwrap_or_else(|| to_lower_snake_case(&ty));
+            let name =
+                label.cloned().unwrap_or_else(|| to_lower_snake_case(&ty));
             let field = Field::Node {
                 name,
                 ty,
@@ -703,10 +723,8 @@ fn lower_rule(acc: &mut Vec<Field>, grammar: &Grammar, label: Option<&String>, r
         }
         Rule::Labeled { label: l, rule } => {
             assert!(label.is_none());
-            let manually_implemented = matches!(
-                l.as_str(),
-                "lhs" | "rhs" | "op" | "index" | "base"
-            );
+            let manually_implemented =
+                matches!(l.as_str(), "lhs" | "rhs" | "op" | "index" | "base");
             if manually_implemented {
                 return;
             }
@@ -733,9 +751,11 @@ fn lower_comma_list(
         _ => return false,
     };
     let (node, repeat, trailing_comma) = match rule.as_slice() {
-        [Rule::Node(node), Rule::Rep(repeat), Rule::Opt(trailing_comma)] => {
-            (node, repeat, trailing_comma)
-        }
+        [
+            Rule::Node(node),
+            Rule::Rep(repeat),
+            Rule::Opt(trailing_comma),
+        ] => (node, repeat, trailing_comma),
         _ => return false,
     };
     let repeat = match &**repeat {
@@ -819,7 +839,11 @@ fn extract_struct_traits(ast: &mut AstSrc) {
     }
 }
 
-fn extract_struct_trait(node: &mut AstNodeSrc, trait_name: &str, methods: &[&str]) {
+fn extract_struct_trait(
+    node: &mut AstNodeSrc,
+    trait_name: &str,
+    methods: &[&str],
+) {
     let mut to_remove = Vec::new();
     for (i, field) in node.fields.iter().enumerate() {
         let method_name = field.method_name().to_string();
@@ -835,9 +859,9 @@ fn extract_struct_trait(node: &mut AstNodeSrc, trait_name: &str, methods: &[&str
 
 fn extract_enum_traits(ast: &mut AstSrc) {
     for enm in &mut ast.enums {
-        if enm.name == "Stmt" {
-            continue;
-        }
+        // if enm.name == "Stmt" {
+        //     continue;
+        // }
         let nodes = &ast.nodes;
         let mut variant_traits = enm
             .variants

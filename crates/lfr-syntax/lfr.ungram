@@ -1,14 +1,22 @@
 Root = ImportStmt* Stmt*
 
-ImportStmt = 'import' ImportTarget | 'import' ImportTarget 'as' 'ident'
+ImportStmt = 'import' ImportTarget | 'import' ImportTarget
 
-ImportTarget = 'ident' | 'string'
+ImportTarget = 'ident' | StringLit 'as' 'ident'
 
 Name =
-  'ident' | 'self'
+  'ident' | 'this'
 
-LitVal =
-  'string' | 'int_number'
+StringLit = 'str' | 'multiline_str'
+
+NumberLit = 'int_number'
+
+BooleanLit = 'true' | 'false'
+
+LitVal = inner: LitValInner
+
+LitValInner =
+  StringLit | NumberLit | BooleanLit
 
 FnDef =
   'fn' 'ident' '(' ')' Block
@@ -16,10 +24,12 @@ FnDef =
 Block = '{' Stmt* '}'
 
 Stmt =
-  Expr ';'?
-| DeclarationStmt ';'?
+  ExprStmt
+| DeclarationStmt
 | WhileStmt
 | ForStmt
+
+ExprStmt = Expr ';'?
 
 BinExpr =
   lhs: Expr
@@ -46,12 +56,15 @@ PrimaryExprInner =
   TupleExpr
 | ArrExpr
 | Block
-| Name
+| Path
 | LitVal
 | IfExpr
 | BreakStmt
 | ContinueStmt
 | ReturnStmt
+
+Path = '::'? 'ident' PathFrag*
+PathFrag = '::' 'ident'
 
 FnCallExpr = Expr FnCallArgs
 MethodCallExpr = Expr '.' 'ident' FnCallArgs
@@ -96,10 +109,7 @@ WhileStmt =
   'while' Expr Block
 
 ForStmt =
-  'for' ForInExpr Block
-
-ForInExpr =
-  'ident' 'in' Expr
+  'for' 'ident' 'in' Expr Block
 
 BreakStmt =
   'break' Expr?
@@ -111,4 +121,4 @@ ReturnStmt =
   'return' Expr?
 
 DeclarationStmt =
-  'let' 'ident' '=' Expr
+  'let' 'ident' '=' Expr ';'?

@@ -1,8 +1,6 @@
-use crate::{
-    ast::AstToken,
-    SyntaxKind::{self, *},
-    SyntaxToken,
-};
+use crate::ast::AstToken;
+use crate::SyntaxKind::{self, *};
+use crate::SyntaxToken;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Whitespace {
     pub(crate) syntax: SyntaxToken,
@@ -16,6 +14,7 @@ impl AstToken for Whitespace {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == WHITESPACE
     }
+
     fn cast(syntax: SyntaxToken) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -23,6 +22,7 @@ impl AstToken for Whitespace {
             None
         }
     }
+
     fn syntax(&self) -> &SyntaxToken {
         &self.syntax
     }
@@ -40,6 +40,7 @@ impl AstToken for Comment {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == COMMENT
     }
+
     fn cast(syntax: SyntaxToken) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -47,6 +48,7 @@ impl AstToken for Comment {
             None
         }
     }
+
     fn syntax(&self) -> &SyntaxToken {
         &self.syntax
     }
@@ -64,6 +66,7 @@ impl AstToken for BlockComment {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == BLOCK_COMMENT
     }
+
     fn cast(syntax: SyntaxToken) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -71,6 +74,7 @@ impl AstToken for BlockComment {
             None
         }
     }
+
     fn syntax(&self) -> &SyntaxToken {
         &self.syntax
     }
@@ -88,6 +92,7 @@ impl AstToken for Str {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == STR
     }
+
     fn cast(syntax: SyntaxToken) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -95,6 +100,7 @@ impl AstToken for Str {
             None
         }
     }
+
     fn syntax(&self) -> &SyntaxToken {
         &self.syntax
     }
@@ -112,6 +118,7 @@ impl AstToken for MultilineStr {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == MULTILINE_STR
     }
+
     fn cast(syntax: SyntaxToken) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -119,6 +126,7 @@ impl AstToken for MultilineStr {
             None
         }
     }
+
     fn syntax(&self) -> &SyntaxToken {
         &self.syntax
     }
@@ -136,6 +144,7 @@ impl AstToken for IntNumber {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == INT_NUMBER
     }
+
     fn cast(syntax: SyntaxToken) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -143,6 +152,7 @@ impl AstToken for IntNumber {
             None
         }
     }
+
     fn syntax(&self) -> &SyntaxToken {
         &self.syntax
     }
@@ -160,6 +170,7 @@ impl AstToken for FloatNumber {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == FLOAT_NUMBER
     }
+
     fn cast(syntax: SyntaxToken) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -167,6 +178,7 @@ impl AstToken for FloatNumber {
             None
         }
     }
+
     fn syntax(&self) -> &SyntaxToken {
         &self.syntax
     }
@@ -184,6 +196,7 @@ impl AstToken for Ident {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == IDENT
     }
+
     fn cast(syntax: SyntaxToken) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -191,6 +204,7 @@ impl AstToken for Ident {
             None
         }
     }
+
     fn syntax(&self) -> &SyntaxToken {
         &self.syntax
     }

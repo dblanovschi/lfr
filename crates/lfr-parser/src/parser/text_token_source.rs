@@ -1,10 +1,11 @@
-use lfr_syntax::{rowan::TextSize, span::Span, syntax_kind::SyntaxKind::EOF, SyntaxKind, T};
-
 use lfr_stdx::TakeIfUnless;
-
-use crate::parser::IsTrivia;
+use lfr_syntax::rowan::TextSize;
+use lfr_syntax::span::Span;
+use lfr_syntax::syntax_kind::SyntaxKind::EOF;
+use lfr_syntax::{SyntaxKind, T};
 
 use super::{FindProperty, ForwardToken, Token, TokenSource};
+use crate::parser::IsTrivia;
 
 ///
 #[derive(Debug)]
@@ -14,7 +15,8 @@ pub struct LexerWrap {
 }
 
 impl LexerWrap {
-    /// Creates a new `LexerWrap` from the list of tokens and starts at token indexed `0`
+    /// Creates a new `LexerWrap` from the list of tokens and starts at token
+    /// indexed `0`
     pub fn new(tokens: &[Token]) -> Self {
         let mut text_off = 0.into();
         let tokens = tokens
@@ -103,6 +105,7 @@ impl TokenSource for LexerWrap {
                 T![!=] => at_composite2(tokens, T![!], T![=]),
                 T![<=] => at_composite2(tokens, T![<], T![=]),
                 T![>=] => at_composite2(tokens, T![>], T![=]),
+                T![::] => at_composite2(tokens, T![:], T![:]),
                 kind => tokens[0].0.syntax_kind == kind,
             }
         }

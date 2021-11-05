@@ -1,8 +1,8 @@
 use drop_bomb::DropBomb;
+use lfr_syntax::syntax_kind::SyntaxKind::{self, *};
 
 use crate::parser::event::Event;
 use crate::parser::Parser;
-use lfr_syntax::syntax_kind::SyntaxKind::{self, *};
 
 pub struct Marker {
     pos: u32,
@@ -20,7 +20,11 @@ impl Marker {
     /// Finishes the syntax tree node and assigns `kind` to it,
     /// and mark the create a `CompletedMarker` for possible future
     /// operation like `.precede()` to deal with forward_parent.
-    pub(crate) fn complete(mut self, p: &mut Parser, kind: SyntaxKind) -> CompletedMarker {
+    pub(crate) fn complete(
+        mut self,
+        p: &mut Parser,
+        kind: SyntaxKind,
+    ) -> CompletedMarker {
         self.bomb.defuse();
         let idx = self.pos as usize;
         match &mut p.events[idx] {

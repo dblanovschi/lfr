@@ -7,7 +7,8 @@ mod generated {
     pub mod tokens;
 }
 
-pub use generated::{nodes::*, tokens::*};
+pub use generated::nodes::*;
+pub use generated::tokens::*;
 
 pub trait AstNode {
     fn can_cast(kind: SyntaxKind) -> bool
@@ -68,6 +69,7 @@ impl<N> AstChildren<N> {
 
 impl<N: AstNode> Iterator for AstChildren<N> {
     type Item = N;
+
     fn next(&mut self) -> Option<N> {
         self.inner.find_map(N::cast)
     }
@@ -84,7 +86,10 @@ mod support {
         AstChildren::new(parent)
     }
 
-    pub(super) fn token(parent: &SyntaxNode, kind: SyntaxKind) -> Option<SyntaxToken> {
+    pub(super) fn token(
+        parent: &SyntaxNode,
+        kind: SyntaxKind,
+    ) -> Option<SyntaxToken> {
         parent
             .children_with_tokens()
             .filter_map(|it| it.into_token())

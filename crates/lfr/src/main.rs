@@ -1,7 +1,5 @@
-use lfr_parser::lfr_syntax::{
-    ast::{AstNode, Root},
-    SyntaxNode,
-};
+use lfr_parser::lfr_syntax::ast::{AstNode, Root};
+use lfr_parser::lfr_syntax::SyntaxNode;
 
 mod panic_handler;
 
@@ -32,12 +30,15 @@ fn main() {
     dbg!(&errors);
 
     let node = SyntaxNode::new_root(node);
-    lfr_parser::parser::print_ast(&node, 0);
+    // lfr_parser::parser::print_ast(&node, 0);
     let root = Root::cast(node).unwrap();
 
-    // for import_stmt in root.import_stmts() {
-    //     lfr_parser::parser::print_ast(import_stmt.syntax(), 0);
-    // }
+    for import_stmt in root.import_stmts() {
+        lfr_parser::parser::print_ast(
+            import_stmt.import_target().unwrap().syntax(),
+            0,
+        );
+    }
 
     // for stmt in root.stmts() {
     //     lfr_parser::parser::print_ast(stmt.syntax(), 0);

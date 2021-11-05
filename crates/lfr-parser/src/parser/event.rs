@@ -1,9 +1,9 @@
+use std::mem;
+
 use lfr_syntax::SyntaxKind::{self, TOMBSTONE};
 
 use super::error::ParseError;
 use super::tree_sink::TreeSink;
-
-use std::mem;
 
 #[derive(Debug)]
 /// `Parser` produces a flat list of `Event`s.
@@ -94,9 +94,11 @@ pub(super) fn process(sink: &mut dyn TreeSink, mut events: Vec<Event>) {
                 kind,
                 forward_parent,
             } => {
-                // For events[A, B, C], B is A's forward_parent, C is B's forward_parent,
-                // in the normal control flow, the parent-child relation: `A -> B -> C`,
-                // while with the magic forward_parent, it writes: `C <- B <- A`.
+                // For events[A, B, C], B is A's forward_parent, C is B's
+                // forward_parent, in the normal control flow,
+                // the parent-child relation: `A -> B -> C`,
+                // while with the magic forward_parent, it writes: `C <- B <-
+                // A`.
 
                 // append `A` into parents.
                 forward_parents.push(kind);
@@ -105,7 +107,10 @@ pub(super) fn process(sink: &mut dyn TreeSink, mut events: Vec<Event>) {
                 while let Some(fwd) = fp {
                     idx += fwd as usize;
                     // append `A`'s forward_parent `B`
-                    fp = match mem::replace(&mut events[idx], Event::tombstone()) {
+                    fp = match mem::replace(
+                        &mut events[idx],
+                        Event::tombstone(),
+                    ) {
                         Event::Start {
                             kind,
                             forward_parent,

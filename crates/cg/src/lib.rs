@@ -1,4 +1,5 @@
-use std::{fs, path::Path};
+use std::fs;
+use std::path::Path;
 
 #[macro_export]
 macro_rules! ws_path {
@@ -12,7 +13,8 @@ macro_rules! ws_path {
 pub fn reformat(f: &Path) {
     let rustfmt_conf = ws_path!("rustfmt.toml");
 
-    let cmd = xshell::cmd!("rustfmt --edition=2021 --config-path {rustfmt_conf} {f}");
+    let cmd =
+        xshell::cmd!("rustfmt --edition=2021 --config-path {rustfmt_conf} {f}");
 
     cmd.run().unwrap();
 }

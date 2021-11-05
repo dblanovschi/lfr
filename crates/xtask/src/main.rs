@@ -10,6 +10,6 @@ fn main() {
     match cmd {
         Command::GenSyntax => {
             xtask::gen_syntax::gen_syntax();
-        },
+        }
     }
 }

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use lfr_base_db::{salsa, impl_intern_key};
+use lfr_base_db::{impl_intern_key, salsa};
 
 use crate::db;
 
@@ -20,6 +20,7 @@ macro_rules! impl_intern {
 
         impl Intern for $loc {
             type ID = $id;
+
             fn intern(self, db: &dyn db::DefDatabase) -> $id {
                 db.$intern(self)
             }
@@ -27,6 +28,7 @@ macro_rules! impl_intern {
 
         impl Lookup for $id {
             type Data = $loc;
+
             fn lookup(&self, db: &dyn db::DefDatabase) -> $loc {
                 db.$lookup(*self)
             }
@@ -43,6 +45,6 @@ macro_rules! include_intern {
     };
 }
 
-include_intern!(pub struct_, "intern/struct.rs");
-include_intern!(pub field, "intern/field.rs");
-include_intern!(pub type_ref, "intern/type_ref.rs");
+include_intern!(pub struct_, "hir/struct.rs");
+include_intern!(pub field, "hir/field.rs");
+include_intern!(pub type_ref, "hir/type_ref.rs");

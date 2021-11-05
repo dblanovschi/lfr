@@ -18,7 +18,8 @@ mod also {
 }
 
 mod and_then_do {
-    /// A trait for exposing [`AndThenDo::and_then_do`] on [`Option`] and [`Result`]
+    /// A trait for exposing [`AndThenDo::and_then_do`] on [`Option`] and
+    /// [`Result`]
     pub trait AndThenDo {
         /// The type of the value
         type VT;
@@ -68,7 +69,7 @@ mod clone_to {
         /// # Examples
         /// ```
         /// # use leafbuild_stdx::CloneTo;
-        /// let mut  a = 0;
+        /// let mut a = 0;
         /// assert_eq!(&1, 1_i32.clone_to_ref(&mut a));
         /// assert_eq!(1, a);
         /// ```
@@ -133,7 +134,7 @@ mod copy_to {
         /// ```
         /// # use leafbuild_stdx::CopyTo;
         /// #
-        /// let mut  i = 1;
+        /// let mut i = 1;
         /// assert_eq!(2, 2.copy_to(&mut i));
         /// assert_eq!(i, 2);
         /// ```
@@ -199,8 +200,14 @@ mod let_ {
         /// # #[derive(Debug)]
         /// #[derive(Eq, PartialEq)]
         /// struct P(i32);
-        /// let mut  p = P(0);
-        /// assert_eq!(1, p.let_ref_mut(|it| {it.0 = 1; it.0}));
+        /// let mut p = P(0);
+        /// assert_eq!(
+        ///     1,
+        ///     p.let_ref_mut(|it| {
+        ///         it.0 = 1;
+        ///         it.0
+        ///     })
+        /// );
         /// assert_eq!(P(1), p);
         /// ```
         #[inline(always)]
@@ -228,11 +235,7 @@ mod take_if_unless {
         where
             F: FnOnce(&Self) -> bool,
         {
-            if condition(&self) {
-                Some(self)
-            } else {
-                None
-            }
+            if condition(&self) { Some(self) } else { None }
         }
         /// Returns `None` if condition == true or Some(...) otherwise
         #[inline(always)]
@@ -240,11 +243,7 @@ mod take_if_unless {
         where
             F: FnOnce(&Self) -> bool,
         {
-            if condition(&self) {
-                None
-            } else {
-                Some(self)
-            }
+            if condition(&self) { None } else { Some(self) }
         }
     }
 
@@ -252,9 +251,12 @@ mod take_if_unless {
 }
 
 mod take_if_unless_owned {
-    /// Similar to [`TakeIfUnless`][`super::TakeIfUnless`], but works with the owned types
+    /// Similar to [`TakeIfUnless`][`super::TakeIfUnless`], but works with the
+    /// owned types
     pub trait TakeIfUnlessOwned: ToOwned {
-        /// Similar to [`TakeIfUnless::take_if`][`super::TakeIfUnless::take_if`], but calls to_owned() too.
+        /// Similar to
+        /// [`TakeIfUnless::take_if`][`super::TakeIfUnless::take_if`], but calls
+        /// to_owned() too.
         #[inline(always)]
         fn take_if_owned<F>(&self, condition: F) -> Option<Self::Owned>
         where
@@ -266,7 +268,9 @@ mod take_if_unless_owned {
                 None
             }
         }
-        /// Similar to [`TakeIfUnless::take_unless`][`super::TakeIfUnless::take_unless`], but calls to_owned() too.
+        /// Similar to
+        /// [`TakeIfUnless::take_unless`][`super::TakeIfUnless::take_unless`],
+        /// but calls to_owned() too.
         #[inline(always)]
         fn take_unless_owned<F>(&self, condition: F) -> Option<Self::Owned>
         where
@@ -281,7 +285,11 @@ mod take_if_unless_owned {
     }
 }
 
-pub use self::{
-    also::*, and_then_do::*, clone_to::*, copied_val::*, copy_to::*, let_::*, take_if_unless::*,
-    take_if_unless_owned::*,
-};
+pub use self::also::*;
+pub use self::and_then_do::*;
+pub use self::clone_to::*;
+pub use self::copied_val::*;
+pub use self::copy_to::*;
+pub use self::let_::*;
+pub use self::take_if_unless::*;
+pub use self::take_if_unless_owned::*;

@@ -5,7 +5,8 @@ use std::sync::mpsc::{channel, Receiver};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use notify::{DebouncedEvent, INotifyWatcher, RecursiveMode, Watcher, watcher};
+use lfr_base_db::salsa;
+use notify::{watcher, DebouncedEvent, INotifyWatcher, RecursiveMode, Watcher};
 
 #[salsa::query_group(VfsDatabaseStorage)]
 pub trait VfsDatabase: salsa::Database + FileWatcher {
@@ -42,7 +43,8 @@ pub trait FileWatcher {
 
 pub fn setup_watcher() -> VfsWatcher {
     let (tx, rx) = channel();
-    let watcher = Arc::from(Mutex::new(watcher(tx, Duration::from_secs(1)).unwrap()));
+    let watcher =
+        Arc::from(Mutex::new(watcher(tx, Duration::from_secs(1)).unwrap()));
 
     VfsWatcher(watcher, rx)
 }

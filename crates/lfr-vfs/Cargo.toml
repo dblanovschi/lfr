@@ -6,5 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-salsa = "0.17.0-pre.2"
-notify = "4.0.15"
+
+notify = "4.0.17"
+
+lfr-base-db = { path = "../lfr-base-db" }

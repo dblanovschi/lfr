@@ -1,4 +1,5 @@
-use std::{fmt, ops::Range};
+use std::fmt;
+use std::ops::Range;
 
 use rowan::{TextRange, TextSize};
 

@@ -420,6 +420,7 @@ name = "lfr-hir-def"
 version = "0.1.0"
 dependencies = [
  "lfr-base-db",
+ "lfr-syntax",
  "lfr-vfs",
 ]
 
@@ -448,8 +449,8 @@ dependencies = [
 name = "lfr-vfs"
 version = "0.1.0"
 dependencies = [
+ "lfr-base-db",
  "notify",
- "salsa",
 ]
 
 [[package]]

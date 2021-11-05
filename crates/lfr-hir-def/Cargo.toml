@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 lfr-base-db = { path = "../lfr-base-db" }
 lfr-vfs = { path = "../lfr-vfs" }
+lfr-syntax = { path = "../lfr-syntax" }

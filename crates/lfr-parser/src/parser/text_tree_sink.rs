@@ -1,14 +1,12 @@
-use lfr_syntax::{
-    rowan::{GreenNode, GreenNodeBuilder, TextRange, TextSize},
-    syntax_kind::SyntaxKind,
-};
+use std::mem;
+
+use lfr_syntax::rowan::{GreenNode, GreenNodeBuilder, TextRange, TextSize};
+use lfr_syntax::syntax_kind::SyntaxKind;
 
 use super::error::ParseError;
 use super::token_source::Token;
 use super::tree_sink::TreeSink;
 use super::IsTrivia;
-
-use std::mem;
 
 ///
 #[derive(Debug)]
@@ -60,9 +58,10 @@ impl<'sink> TreeSink for TextTreeSink<'sink> {
             .iter()
             .take_while(|it| it.syntax_kind.is_trivia())
             .count();
-        let leading_trivias = &self.tokens[self.token_pos..self.token_pos + n_trivias];
-        let mut trivia_end =
-            self.text_pos + leading_trivias.iter().map(|it| it.len).sum::<TextSize>();
+        let leading_trivias =
+            &self.tokens[self.token_pos..self.token_pos + n_trivias];
+        let mut trivia_end = self.text_pos
+            + leading_trivias.iter().map(|it| it.len).sum::<TextSize>();
 
         let n_attached_trivias = {
             let leading_trivias = leading_trivias.iter().rev().map(|it| {
@@ -157,9 +156,10 @@ fn n_attached_trivias<'a>(
     //                 WHITESPACE if text.contains("\n\n") => {
     //                     // we check whether the next token is a doc-comment
     //                     // and skip the whitespace in this case
-    //                     if let Some((COMMENT, peek_text)) = trivias.peek().map(|(_, pair)| pair) {
-    //                         let comment_kind = ast::CommentKind::from_text(peek_text);
-    //                         if comment_kind.doc == Some(ast::CommentPlacement::Outer) {
+    //                     if let Some((COMMENT, peek_text)) =
+    // trivias.peek().map(|(_, pair)| pair) {                         let
+    // comment_kind = ast::CommentKind::from_text(peek_text);
+    // if comment_kind.doc == Some(ast::CommentPlacement::Outer) {
     //                             continue;
     //                         }
     //                     }
@@ -167,8 +167,8 @@ fn n_attached_trivias<'a>(
     //                 }
     //                 COMMENT => {
     //                     let comment_kind = ast::CommentKind::from_text(text);
-    //                     if comment_kind.doc == Some(ast::CommentPlacement::Inner) {
-    //                         break;
+    //                     if comment_kind.doc ==
+    // Some(ast::CommentPlacement::Inner) {                         break;
     //                     }
     //                     res = i + 1;
     //                 }

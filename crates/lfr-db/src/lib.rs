@@ -6,7 +6,7 @@ use lfr_vfs::FileWatcher;
 #[salsa::database(
     lfr_vfs::VfsDatabaseStorage,
     lfr_hir_def::db::HirDefStorage,
-    lfr_hir_def::db::InternDatabaseStorage,
+    lfr_hir_def::db::InternDatabaseStorage
 )]
 struct LfrDatabase {
     storage: salsa::Storage<Self>,

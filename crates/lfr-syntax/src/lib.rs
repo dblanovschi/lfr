@@ -1,8 +1,8 @@
 pub extern crate rowan;
 
 pub mod ast;
-pub mod syntax_kind;
 pub mod span;
+pub mod syntax_kind;
 
 use rowan::Language;
 pub use syntax_kind::SyntaxKind;

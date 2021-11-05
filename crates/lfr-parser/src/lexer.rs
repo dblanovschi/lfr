@@ -1,10 +1,11 @@
 use std::convert::TryInto;
 use std::ops::Range;
 
-use logos::Logos;
-
 use lfr_stdx::Let;
-use lfr_syntax::{T, syntax_kind::SyntaxKind, span::Span};
+use lfr_syntax::span::Span;
+use lfr_syntax::syntax_kind::SyntaxKind;
+use lfr_syntax::T;
+use logos::Logos;
 
 #[derive(Logos, Copy, Clone, Debug, PartialEq, PartialOrd, Eq)]
 pub enum Tk {
@@ -111,7 +112,7 @@ impl From<Tk> for SyntaxKind {
             Tk::RAngle => T ! [>],
             Tk::LAngle => T ! [<],
             Tk::Eq => T ! [=],
-            Tk::Bang => T ! [!],
+            Tk::Bang => T![!],
             Tk::LParen => T!['('],
             Tk::RParen => T![')'],
             Tk::LBracket => T!['['],
@@ -152,6 +153,7 @@ impl<'a> Lexer<'a> {
 }
 impl<'a> Iterator for Lexer<'a> {
     type Item = (SyntaxKind, Span);
+
     fn next(&mut self) -> Option<Self::Item> {
         self.lexer.next().map(|(token, span)| {
             (

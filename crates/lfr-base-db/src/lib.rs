@@ -7,6 +7,7 @@ macro_rules! impl_intern_key {
             fn from_intern_id(v: $crate::salsa::InternId) -> Self {
                 $name(v)
             }
+
             fn as_intern_id(&self) -> $crate::salsa::InternId {
                 self.0
             }

@@ -2,7 +2,7 @@
 
 #![allow(unused_imports)]
 #![allow(bad_style, missing_docs, unreachable_pub)]
-#[doc = r" The kind of syntax node, e.g. `IDENT`, `USE_KW`, or `STRUCT`."]
+/// The kind of syntax node, e.g. `IDENT`, `USE_KW`, or `STRUCT`.
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 #[repr(u16)]
 pub enum SyntaxKind {
@@ -22,6 +22,7 @@ pub enum SyntaxKind {
     R_ANGLE,
     DOT,
     COLON,
+    COLON2,
     QMARK,
     EQ,
     PLUS,
@@ -50,7 +51,7 @@ pub enum SyntaxKind {
     L_ANGLE_EQ,
     R_ANGLE_EQ,
     FN_KW,
-    SELF_KW,
+    THIS_KW,
     WHILE_KW,
     FOR_KW,
     IN_KW,
@@ -81,7 +82,9 @@ pub enum SyntaxKind {
     IMPORT_STMT,
     IMPORT_TARGET,
     NAME,
-    NAME_IDENT,
+    STRING_LIT,
+    NUMBER_LIT,
+    BOOLEAN_LIT,
     LIT_VAL,
     FN_DEF,
     BLOCK,
@@ -91,6 +94,8 @@ pub enum SyntaxKind {
     TUPLE_EXPR,
     ARR_EXPR,
     PRIMARY_EXPR,
+    PATH,
+    PATH_FRAG,
     FN_CALL_EXPR,
     METHOD_CALL_EXPR,
     FN_CALL_ARGS,
@@ -116,31 +121,37 @@ use self::SyntaxKind::*;
 impl SyntaxKind {
     pub fn is_keyword(self) -> bool {
         match self {
-            FN_KW | SELF_KW | WHILE_KW | FOR_KW | IN_KW | CONTINUE_KW | BREAK_KW | RETURN_KW
-            | IF_KW | ELSE_KW | LET_KW | TRUE_KW | FALSE_KW | IMPORT_KW | AS_KW => true,
+            FN_KW | THIS_KW | WHILE_KW | FOR_KW | IN_KW | CONTINUE_KW
+            | BREAK_KW | RETURN_KW | IF_KW | ELSE_KW | LET_KW | TRUE_KW
+            | FALSE_KW | IMPORT_KW | AS_KW => true,
             _ => false,
         }
     }
+
     pub fn is_punct(self) -> bool {
         match self {
-            SEMICOLON | COMMA | L_PAREN | R_PAREN | L_CURLY | R_CURLY | L_BRACK | R_BRACK
-            | L_ANGLE | R_ANGLE | DOT | COLON | QMARK | EQ | PLUS | MINUS | ASTERISK | SLASH
-            | PERCENT | AMP | AMP2 | PIPE | PIPE2 | CARET | BANG | PLUS_EQ | MINUS_EQ
-            | ASTERISK_EQ | SLASH_EQ | MODULUS_EQ | AMP_EQ | PIPE_EQ | AMP2_EQ | PIPE2_EQ
-            | CARET_EQ | EQ_EQ | BANG_EQ | L_ANGLE_EQ | R_ANGLE_EQ => true,
+            SEMICOLON | COMMA | L_PAREN | R_PAREN | L_CURLY | R_CURLY
+            | L_BRACK | R_BRACK | L_ANGLE | R_ANGLE | DOT | COLON | COLON2
+            | QMARK | EQ | PLUS | MINUS | ASTERISK | SLASH | PERCENT | AMP
+            | AMP2 | PIPE | PIPE2 | CARET | BANG | PLUS_EQ | MINUS_EQ
+            | ASTERISK_EQ | SLASH_EQ | MODULUS_EQ | AMP_EQ | PIPE_EQ
+            | AMP2_EQ | PIPE2_EQ | CARET_EQ | EQ_EQ | BANG_EQ | L_ANGLE_EQ
+            | R_ANGLE_EQ => true,
             _ => false,
         }
     }
+
     pub fn is_literal(self) -> bool {
         match self {
             INT_NUMBER | FLOAT_NUMBER | CHAR | STR | MULTILINE_STR => true,
             _ => false,
         }
     }
+
     pub fn from_keyword(ident: &str) -> Option<SyntaxKind> {
         let kw = match ident {
             "fn" => FN_KW,
-            "self" => SELF_KW,
+            "this" => THIS_KW,
             "while" => WHILE_KW,
             "for" => FOR_KW,
             "in" => IN_KW,
@@ -158,6 +169,7 @@ impl SyntaxKind {
         };
         Some(kw)
     }
+
     pub fn from_char(c: char) -> Option<SyntaxKind> {
         let tok = match c {
             ';' => SEMICOLON,
@@ -189,5 +201,5 @@ impl SyntaxKind {
     }
 }
 #[macro_export]
-macro_rules ! T { [;] => { $ crate :: SyntaxKind :: SEMICOLON } ; [,] => { $ crate :: SyntaxKind :: COMMA } ; ['('] => { $ crate :: SyntaxKind :: L_PAREN } ; [')'] => { $ crate :: SyntaxKind :: R_PAREN } ; ['{'] => { $ crate :: SyntaxKind :: L_CURLY } ; ['}'] => { $ crate :: SyntaxKind :: R_CURLY } ; ['['] => { $ crate :: SyntaxKind :: L_BRACK } ; [']'] => { $ crate :: SyntaxKind :: R_BRACK } ; [<] => { $ crate :: SyntaxKind :: L_ANGLE } ; [>] => { $ crate :: SyntaxKind :: R_ANGLE } ; [.] => { $ crate :: SyntaxKind :: DOT } ; [:] => { $ crate :: SyntaxKind :: COLON } ; [?] => { $ crate :: SyntaxKind :: QMARK } ; [=] => { $ crate :: SyntaxKind :: EQ } ; [+] => { $ crate :: SyntaxKind :: PLUS } ; [-] => { $ crate :: SyntaxKind :: MINUS } ; [*] => { $ crate :: SyntaxKind :: ASTERISK } ; [/] => { $ crate :: SyntaxKind :: SLASH } ; [%] => { $ crate :: SyntaxKind :: PERCENT } ; [&] => { $ crate :: SyntaxKind :: AMP } ; [&&] => { $ crate :: SyntaxKind :: AMP2 } ; [|] => { $ crate :: SyntaxKind :: PIPE } ; [||] => { $ crate :: SyntaxKind :: PIPE2 } ; [^] => { $ crate :: SyntaxKind :: CARET } ; [!] => { $ crate :: SyntaxKind :: BANG } ; [+=] => { $ crate :: SyntaxKind :: PLUS_EQ } ; [-=] => { $ crate :: SyntaxKind :: MINUS_EQ } ; [*=] => { $ crate :: SyntaxKind :: ASTERISK_EQ } ; [/=] => { $ crate :: SyntaxKind :: SLASH_EQ } ; [%=] => { $ crate :: SyntaxKind :: MODULUS_EQ } ; [&=] => { $ crate :: SyntaxKind :: AMP_EQ } ; [|=] => { $ crate :: SyntaxKind :: PIPE_EQ } ; [&&=] => { $ crate :: SyntaxKind :: AMP2_EQ } ; [||=] => { $ crate :: SyntaxKind :: PIPE2_EQ } ; [^=] => { $ crate :: SyntaxKind :: CARET_EQ } ; [==] => { $ crate :: SyntaxKind :: EQ_EQ } ; [!=] => { $ crate :: SyntaxKind :: BANG_EQ } ; [<=] => { $ crate :: SyntaxKind :: L_ANGLE_EQ } ; [>=] => { $ crate :: SyntaxKind :: R_ANGLE_EQ } ; [fn] => { $ crate :: SyntaxKind :: FN_KW } ; [self] => { $ crate :: SyntaxKind :: SELF_KW } ; [while] => { $ crate :: SyntaxKind :: WHILE_KW } ; [for] => { $ crate :: SyntaxKind :: FOR_KW } ; [in] => { $ crate :: SyntaxKind :: IN_KW } ; [continue] => { $ crate :: SyntaxKind :: CONTINUE_KW } ; [break] => { $ crate :: SyntaxKind :: BREAK_KW } ; [return] => { $ crate :: SyntaxKind :: RETURN_KW } ; [if] => { $ crate :: SyntaxKind :: IF_KW } ; [else] => { $ crate :: SyntaxKind :: ELSE_KW } ; [let] => { $ crate :: SyntaxKind :: LET_KW } ; [true] => { $ crate :: SyntaxKind :: TRUE_KW } ; [false] => { $ crate :: SyntaxKind :: FALSE_KW } ; [import] => { $ crate :: SyntaxKind :: IMPORT_KW } ; [as] => { $ crate :: SyntaxKind :: AS_KW } ; [comment] => { $ crate :: SyntaxKind :: COMMENT } ; [block_comment] => { $ crate :: SyntaxKind :: COMMENT } ; [ident] => { $ crate :: SyntaxKind :: IDENT } ; [int_number] => { $ crate :: SyntaxKind :: INT_NUMBER } ; [str] => { $ crate :: SyntaxKind :: STR } ; [multiline_str] => { $ crate :: SyntaxKind :: MULTILINE_STR } ; [whitespace] => { $ crate :: SyntaxKind :: WHITESPACE } ; [newline] => { $ crate :: SyntaxKind :: NEWLINE } ; }
+macro_rules ! T { [;] => { $ crate :: SyntaxKind :: SEMICOLON } ; [,] => { $ crate :: SyntaxKind :: COMMA } ; ['('] => { $ crate :: SyntaxKind :: L_PAREN } ; [')'] => { $ crate :: SyntaxKind :: R_PAREN } ; ['{'] => { $ crate :: SyntaxKind :: L_CURLY } ; ['}'] => { $ crate :: SyntaxKind :: R_CURLY } ; ['['] => { $ crate :: SyntaxKind :: L_BRACK } ; [']'] => { $ crate :: SyntaxKind :: R_BRACK } ; [<] => { $ crate :: SyntaxKind :: L_ANGLE } ; [>] => { $ crate :: SyntaxKind :: R_ANGLE } ; [.] => { $ crate :: SyntaxKind :: DOT } ; [:] => { $ crate :: SyntaxKind :: COLON } ; [::] => { $ crate :: SyntaxKind :: COLON2 } ; [?] => { $ crate :: SyntaxKind :: QMARK } ; [=] => { $ crate :: SyntaxKind :: EQ } ; [+] => { $ crate :: SyntaxKind :: PLUS } ; [-] => { $ crate :: SyntaxKind :: MINUS } ; [*] => { $ crate :: SyntaxKind :: ASTERISK } ; [/] => { $ crate :: SyntaxKind :: SLASH } ; [%] => { $ crate :: SyntaxKind :: PERCENT } ; [&] => { $ crate :: SyntaxKind :: AMP } ; [&&] => { $ crate :: SyntaxKind :: AMP2 } ; [|] => { $ crate :: SyntaxKind :: PIPE } ; [||] => { $ crate :: SyntaxKind :: PIPE2 } ; [^] => { $ crate :: SyntaxKind :: CARET } ; [!] => { $ crate :: SyntaxKind :: BANG } ; [+=] => { $ crate :: SyntaxKind :: PLUS_EQ } ; [-=] => { $ crate :: SyntaxKind :: MINUS_EQ } ; [*=] => { $ crate :: SyntaxKind :: ASTERISK_EQ } ; [/=] => { $ crate :: SyntaxKind :: SLASH_EQ } ; [%=] => { $ crate :: SyntaxKind :: MODULUS_EQ } ; [&=] => { $ crate :: SyntaxKind :: AMP_EQ } ; [|=] => { $ crate :: SyntaxKind :: PIPE_EQ } ; [&&=] => { $ crate :: SyntaxKind :: AMP2_EQ } ; [||=] => { $ crate :: SyntaxKind :: PIPE2_EQ } ; [^=] => { $ crate :: SyntaxKind :: CARET_EQ } ; [==] => { $ crate :: SyntaxKind :: EQ_EQ } ; [!=] => { $ crate :: SyntaxKind :: BANG_EQ } ; [<=] => { $ crate :: SyntaxKind :: L_ANGLE_EQ } ; [>=] => { $ crate :: SyntaxKind :: R_ANGLE_EQ } ; [fn] => { $ crate :: SyntaxKind :: FN_KW } ; [this] => { $ crate :: SyntaxKind :: THIS_KW } ; [while] => { $ crate :: SyntaxKind :: WHILE_KW } ; [for] => { $ crate :: SyntaxKind :: FOR_KW } ; [in] => { $ crate :: SyntaxKind :: IN_KW } ; [continue] => { $ crate :: SyntaxKind :: CONTINUE_KW } ; [break] => { $ crate :: SyntaxKind :: BREAK_KW } ; [return] => { $ crate :: SyntaxKind :: RETURN_KW } ; [if] => { $ crate :: SyntaxKind :: IF_KW } ; [else] => { $ crate :: SyntaxKind :: ELSE_KW } ; [let] => { $ crate :: SyntaxKind :: LET_KW } ; [true] => { $ crate :: SyntaxKind :: TRUE_KW } ; [false] => { $ crate :: SyntaxKind :: FALSE_KW } ; [import] => { $ crate :: SyntaxKind :: IMPORT_KW } ; [as] => { $ crate :: SyntaxKind :: AS_KW } ; [comment] => { $ crate :: SyntaxKind :: COMMENT } ; [block_comment] => { $ crate :: SyntaxKind :: COMMENT } ; [ident] => { $ crate :: SyntaxKind :: IDENT } ; [int_number] => { $ crate :: SyntaxKind :: INT_NUMBER } ; [str] => { $ crate :: SyntaxKind :: STR } ; [multiline_str] => { $ crate :: SyntaxKind :: MULTILINE_STR } ; [whitespace] => { $ crate :: SyntaxKind :: WHITESPACE } ; [newline] => { $ crate :: SyntaxKind :: NEWLINE } ; }
 pub use T;

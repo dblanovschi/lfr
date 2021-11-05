@@ -6,24 +6,19 @@ pub mod text_tree_sink;
 pub mod token_source;
 pub mod tree_sink;
 
-use lfr_syntax::rowan::{GreenNode, NodeOrToken, TextSize};
-use text_token_source::LexerWrap;
-
 use lfr_stdx::CopyTo;
-
-use crate::lexer::Lexer;
+use lfr_syntax::rowan::{GreenNode, NodeOrToken, TextSize};
 use lfr_syntax::SyntaxKind::{self, *};
 use lfr_syntax::{SyntaxNode, T};
+use text_token_source::LexerWrap;
 
+use self::error::ParseError;
+use self::event::Event;
+use self::marker::{CompletedMarker, Marker};
 use self::text_tree_sink::TextTreeSink;
-use self::token_source::{FindProperty, ForwardToken, Token};
+use self::token_source::{FindProperty, ForwardToken, Token, TokenSource};
 use self::tree_sink::TreeSink;
-use self::{
-    error::ParseError,
-    event::Event,
-    marker::{CompletedMarker, Marker},
-    token_source::TokenSource,
-};
+use crate::lexer::Lexer;
 
 trait IsTrivia: Copy {
     fn is_trivia(self) -> bool;
@@ -31,7 +26,9 @@ trait IsTrivia: Copy {
 
 impl IsTrivia for SyntaxKind {
     fn is_trivia(self) -> bool {
-        self == Self::WHITESPACE || self == Self::COMMENT || self == Self::BLOCK_COMMENT
+        self == Self::WHITESPACE
+            || self == Self::COMMENT
+            || self == Self::BLOCK_COMMENT
     }
 }
 
@@ -67,6 +64,7 @@ impl<'ts> Parser<'ts> {
             T![!=] => self.at_composite2(T![!], T![=]),
             T![<=] => self.at_composite2(T![<], T![=]),
             T![>=] => self.at_composite2(T![>], T![=]),
+            T![::] => self.at_composite2(T![:], T![:]),
             kind => self.current() == kind,
         }
     }
@@ -75,7 +73,12 @@ impl<'ts> Parser<'ts> {
         self.current() == kind1 && self.nth(1) == kind2
     }
 
-    fn at_composite3(&self, kind1: SyntaxKind, kind2: SyntaxKind, kind3: SyntaxKind) -> bool {
+    fn at_composite3(
+        &self,
+        kind1: SyntaxKind,
+        kind2: SyntaxKind,
+        kind3: SyntaxKind,
+    ) -> bool {
         self.current() == kind1 && self.nth(1) == kind2 && self.nth(2) == kind3
     }
 
@@ -147,6 +150,7 @@ impl<'ts> Parser<'ts> {
             T![!=] => 2,
             T![<=] => 2,
             T![>=] => 2,
+            T![::] => 2,
             _ => 1,
         }
     }
@@ -667,7 +671,11 @@ fn parse_precedence_4_expr(p: &mut Parser) -> CompletedMarker {
 }
 
 fn parse_precedence_5_expr(p: &mut Parser) -> CompletedMarker {
-    parse_infix_binop(p, [T![<], T![<=], T![>], T![>=]], parse_precedence_4_expr)
+    parse_infix_binop(
+        p,
+        [T![<], T![<=], T![>], T![>=]],
+        parse_precedence_4_expr,
+    )
 }
 
 fn parse_precedence_6_expr(p: &mut Parser) -> CompletedMarker {

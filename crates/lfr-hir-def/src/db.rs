@@ -1,9 +1,10 @@
 use lfr_base_db::salsa;
 
-use crate::intern::{Field, FieldData, Struct, StructData, TypeRef, TypeRefData};
+use crate::hir::{Field, FieldData, Struct, StructData, TypeRef, TypeRefData};
 
 #[salsa::query_group(HirDefStorage)]
-pub trait DefDatabase: InternDatabase {
+pub trait DefDatabase: InternDatabase // + AstDatabase
+{
 }
 
 #[salsa::query_group(InternDatabaseStorage)]

@@ -1,2 +1,3 @@
 pub mod db;
-mod intern;
+mod hir;
+pub mod lower_syntax;
