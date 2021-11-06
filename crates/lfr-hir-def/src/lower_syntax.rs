@@ -2,13 +2,15 @@ use lfr_syntax::ast;
 
 use crate::db::DefDatabase;
 
-pub fn lower_root(root: &ast::Root, db: &dyn DefDatabase) {
+pub fn lower_root(root: &ast::Root, db: &dyn DefDatabase)
+{
     for stmt in root.stmts() {
         lower_stmt(&stmt, db);
     }
 }
 
-pub fn lower_stmt(stmt: &ast::Stmt, db: &dyn DefDatabase) {
+pub fn lower_stmt(stmt: &ast::Stmt, db: &dyn DefDatabase)
+{
     match stmt {
         ast::Stmt::ExprStmt(e) => {
             let lower = lower_expr(&e.expr().unwrap(), db);
@@ -19,7 +21,8 @@ pub fn lower_stmt(stmt: &ast::Stmt, db: &dyn DefDatabase) {
     }
 }
 
-pub fn lower_expr(expr: &ast::Expr, db: &dyn DefDatabase) {
+pub fn lower_expr(expr: &ast::Expr, db: &dyn DefDatabase)
+{
     match expr {
         ast::Expr::PrimaryExpr(pe) => match pe.inner().unwrap() {
             ast::PrimaryExprInner::TupleExpr(_) => todo!(),

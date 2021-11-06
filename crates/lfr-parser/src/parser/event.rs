@@ -1,6 +1,9 @@
 use std::mem;
 
-use lfr_syntax::SyntaxKind::{self, TOMBSTONE};
+use lfr_syntax::SyntaxKind::{
+    self,
+    TOMBSTONE,
+};
 
 use super::error::ParseError;
 use super::tree_sink::TreeSink;
@@ -9,7 +12,8 @@ use super::tree_sink::TreeSink;
 /// `Parser` produces a flat list of `Event`s.
 /// They are converted to a tree-structure in
 /// a separate pass, via `TreeBuilder`.
-pub(crate) enum Event {
+pub(crate) enum Event
+{
     /// This event signifies the start of the node.
     /// It should be either abandoned (in which case the
     /// `kind` is `TOMBSTONE`, and the event is ignored),
@@ -49,8 +53,9 @@ pub(crate) enum Event {
     /// ```
     ///
     /// See also `CompletedMarker::precede`.
-    Start {
-        kind: SyntaxKind,
+    Start
+    {
+        kind:           SyntaxKind,
         forward_parent: Option<u32>,
     },
 
@@ -61,39 +66,38 @@ pub(crate) enum Event {
     /// `n_raw_tokens` is used to glue complex contextual tokens.
     /// For example, lexer tokenizes `>>` as `>`, `>`, and
     /// `n_raw_tokens = 2` is used to produced a single `>>`.
-    Token {
-        kind: SyntaxKind,
+    Token
+    {
+        kind:         SyntaxKind,
         n_raw_tokens: u8,
     },
 
-    Error {
-        msg: ParseError,
+    Error
+    {
+        msg: ParseError
     },
 }
 
-impl Event {
-    pub(crate) const fn tombstone() -> Event {
-        Event::Start {
-            kind: TOMBSTONE,
-            forward_parent: None,
-        }
+impl Event
+{
+    pub(crate) const fn tombstone() -> Event
+    {
+        Event::Start { kind:           TOMBSTONE,
+                       forward_parent: None, }
     }
 }
 
 /// Generate the syntax tree with the control of events.
-pub(super) fn process(sink: &mut dyn TreeSink, mut events: Vec<Event>) {
+pub(super) fn process(sink: &mut dyn TreeSink, mut events: Vec<Event>)
+{
     let mut forward_parents = Vec::new();
 
     for i in 0..events.len() {
         match mem::replace(&mut events[i], Event::tombstone()) {
-            Event::Start {
-                kind: TOMBSTONE, ..
-            } => (),
+            Event::Start { kind: TOMBSTONE, .. } => (),
 
-            Event::Start {
-                kind,
-                forward_parent,
-            } => {
+            Event::Start { kind,
+                           forward_parent, } => {
                 // For events[A, B, C], B is A's forward_parent, C is B's
                 // forward_parent, in the normal control flow,
                 // the parent-child relation: `A -> B -> C`,
@@ -107,14 +111,11 @@ pub(super) fn process(sink: &mut dyn TreeSink, mut events: Vec<Event>) {
                 while let Some(fwd) = fp {
                     idx += fwd as usize;
                     // append `A`'s forward_parent `B`
-                    fp = match mem::replace(
-                        &mut events[idx],
-                        Event::tombstone(),
-                    ) {
-                        Event::Start {
-                            kind,
-                            forward_parent,
-                        } => {
+                    fp = match mem::replace(&mut events[idx],
+                                            Event::tombstone())
+                    {
+                        Event::Start { kind,
+                                       forward_parent, } => {
                             if kind != TOMBSTONE {
                                 forward_parents.push(kind);
                             }

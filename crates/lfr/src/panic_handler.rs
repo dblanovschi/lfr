@@ -2,7 +2,8 @@
 use indoc::indoc;
 
 /// Installs the panic handler.
-pub fn init() {
+pub fn init()
+{
     let settings = better_panic::Settings::default().message(indoc!(
         r#"
         Well, this is embarrassing.

@@ -1,25 +1,44 @@
-use std::collections::{BTreeSet, HashSet};
+use std::collections::{
+    BTreeSet,
+    HashSet,
+};
 use std::fmt::Write;
 
 use itertools::Itertools;
-use proc_macro2::{Punct, Spacing};
-use quote::{format_ident, quote};
-use ungrammar::{Grammar, Rule};
-
-use crate::ast_src::{
-    AstEnumSrc, AstNodeSrc, AstSrc, Cardinality, Field, KindsSrc, KINDS_SRC,
+use proc_macro2::{
+    Punct,
+    Spacing,
+};
+use quote::{
+    format_ident,
+    quote,
+};
+use ungrammar::{
+    Grammar,
+    Rule,
 };
 
-pub fn gen_syntax() {
+use crate::ast_src::{
+    AstEnumSrc,
+    AstNodeSrc,
+    AstSrc,
+    Cardinality,
+    Field,
+    KindsSrc,
+    KINDS_SRC,
+};
+
+pub fn gen_syntax()
+{
     let syntax_kinds = generate_syntax_kinds(KINDS_SRC);
     let syntax_kinds_file =
         cg::ws_path!("crates/lfr-syntax/src/syntax_kind/generated.rs");
     cg::ensure_file_contents(&syntax_kinds_file, &syntax_kinds);
     cg::reformat(&syntax_kinds_file);
 
-    let grammar = cg::read_file(cg::ws_path!("crates/lfr-syntax/lfr.ungram"))
-        .parse()
-        .unwrap();
+    let grammar =
+        cg::read_file(cg::ws_path!("crates/lfr-syntax/lfr.ungram")).parse()
+                                                                   .unwrap();
     let ast = lower(&grammar);
 
     let ast_tokens = generate_tokens(&ast);
@@ -35,7 +54,8 @@ pub fn gen_syntax() {
     cg::reformat(&ast_nodes_file);
 }
 
-fn generate_tokens(grammar: &AstSrc) -> String {
+fn generate_tokens(grammar: &AstSrc) -> String
+{
     let tokens = grammar.tokens.iter().map(|token| {
         let name = format_ident!("{}", token);
         let kind = format_ident!("{}", to_upper_snake_case(token));
@@ -62,11 +82,11 @@ fn generate_tokens(grammar: &AstSrc) -> String {
     quote! {
         use crate::{SyntaxKind::{self, *}, SyntaxToken, ast::AstToken};
         #(#tokens)*
-    }
-    .to_string()
+    }.to_string()
 }
 
-fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> String {
+fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> String
+{
     let (node_defs, node_boilerplate_impls): (Vec<_>, Vec<_>) = grammar
         .nodes
         .iter()
@@ -280,11 +300,10 @@ fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> String {
 
     let defined_nodes: HashSet<_> = node_names.collect();
 
-    for node in kinds
-        .nodes
-        .iter()
-        .map(|kind| to_pascal_case(kind))
-        .filter(|name| !defined_nodes.iter().any(|&it| it == name))
+    for node in kinds.nodes
+                     .iter()
+                     .map(|kind| to_pascal_case(kind))
+                     .filter(|name| !defined_nodes.iter().any(|&it| it == name))
     {
         drop(node)
         // FIXME: restore this
@@ -311,11 +330,10 @@ fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> String {
 
     let mut res = String::with_capacity(ast.len() * 2);
 
-    let mut docs = grammar
-        .nodes
-        .iter()
-        .map(|it| &it.doc)
-        .chain(grammar.enums.iter().map(|it| &it.doc));
+    let mut docs = grammar.nodes
+                          .iter()
+                          .map(|it| &it.doc)
+                          .chain(grammar.enums.iter().map(|it| &it.doc));
 
     for chunk in ast.split("# [pretty_doc_comment_placeholder_workaround] ") {
         res.push_str(chunk);
@@ -327,22 +345,23 @@ fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> String {
     cg::add_preamble(&res, "gen_syntax")
 }
 
-fn write_doc_comment(contents: &[String], dest: &mut String) {
+fn write_doc_comment(contents: &[String], dest: &mut String)
+{
     for line in contents {
         writeln!(dest, "///{}", line).unwrap();
     }
 }
 
-fn generate_syntax_kinds(grammar: KindsSrc<'_>) -> String {
+fn generate_syntax_kinds(grammar: KindsSrc<'_>) -> String
+{
     let (single_byte_tokens_values, single_byte_tokens): (Vec<_>, Vec<_>) =
-        grammar
-            .punct
-            .iter()
-            .filter(|(token, _name)| token.len() == 1)
-            .map(|(token, name)| {
-                (token.chars().next().unwrap(), format_ident!("{}", name))
-            })
-            .unzip();
+        grammar.punct
+               .iter()
+               .filter(|(token, _name)| token.len() == 1)
+               .map(|(token, name)| {
+                   (token.chars().next().unwrap(), format_ident!("{}", name))
+               })
+               .unzip();
 
     let punctuation_values = grammar.punct.iter().map(|(token, _name)| {
         if "{}[]()".contains(token) {
@@ -353,46 +372,45 @@ fn generate_syntax_kinds(grammar: KindsSrc<'_>) -> String {
             quote! { #(#cs)* }
         }
     });
-    let punctuation = grammar
-        .punct
-        .iter()
-        .map(|(_token, name)| format_ident!("{}", name))
-        .collect::<Vec<_>>();
+    let punctuation = grammar.punct
+                             .iter()
+                             .map(|(_token, name)| format_ident!("{}", name))
+                             .collect::<Vec<_>>();
 
     let full_keywords_values = &grammar.keywords;
-    let full_keywords = full_keywords_values
-        .iter()
-        .map(|kw| format_ident!("{}_KW", to_upper_snake_case(kw)));
+    let full_keywords =
+        full_keywords_values.iter()
+                            .map(|kw| {
+                                format_ident!("{}_KW", to_upper_snake_case(kw))
+                            });
 
-    let all_keywords_values = grammar
-        .keywords
-        .iter()
-        .chain(grammar.contextual_keywords.iter())
-        .collect::<Vec<_>>();
+    let all_keywords_values = grammar.keywords
+                                     .iter()
+                                     .chain(grammar.contextual_keywords.iter())
+                                     .collect::<Vec<_>>();
     let all_keywords_idents =
         all_keywords_values.iter().map(|kw| format_ident!("{}", kw));
-    let all_keywords = all_keywords_values
-        .iter()
-        .map(|name| format_ident!("{}_KW", to_upper_snake_case(name)))
-        .collect::<Vec<_>>();
+    let all_keywords =
+        all_keywords_values.iter()
+                           .map(|name| {
+                               format_ident!("{}_KW", to_upper_snake_case(name))
+                           })
+                           .collect::<Vec<_>>();
 
-    let literals = grammar
-        .literals
-        .iter()
-        .map(|name| format_ident!("{}", name))
-        .collect::<Vec<_>>();
+    let literals = grammar.literals
+                          .iter()
+                          .map(|name| format_ident!("{}", name))
+                          .collect::<Vec<_>>();
 
-    let tokens = grammar
-        .tokens
-        .iter()
-        .map(|name| format_ident!("{}", name))
-        .collect::<Vec<_>>();
+    let tokens = grammar.tokens
+                        .iter()
+                        .map(|name| format_ident!("{}", name))
+                        .collect::<Vec<_>>();
 
-    let nodes = grammar
-        .nodes
-        .iter()
-        .map(|name| format_ident!("{}", name))
-        .collect::<Vec<_>>();
+    let nodes = grammar.nodes
+                       .iter()
+                       .map(|name| format_ident!("{}", name))
+                       .collect::<Vec<_>>();
 
     let ast = quote! {
         #![allow(bad_style, missing_docs, unreachable_pub)]
@@ -476,7 +494,8 @@ fn generate_syntax_kinds(grammar: KindsSrc<'_>) -> String {
     cg::add_preamble(&ast.to_string(), "gen_syntax")
 }
 
-fn to_upper_snake_case(s: &str) -> String {
+fn to_upper_snake_case(s: &str) -> String
+{
     let mut buf = String::with_capacity(s.len());
     let mut prev = false;
     for c in s.chars() {
@@ -490,7 +509,8 @@ fn to_upper_snake_case(s: &str) -> String {
     buf
 }
 
-fn to_lower_snake_case(s: &str) -> String {
+fn to_lower_snake_case(s: &str) -> String
+{
     let mut buf = String::with_capacity(s.len());
     let mut prev = false;
     for c in s.chars() {
@@ -504,38 +524,38 @@ fn to_lower_snake_case(s: &str) -> String {
     buf
 }
 
-fn to_pascal_case(s: &str) -> String {
+fn to_pascal_case(s: &str) -> String
+{
     let mut buf = String::with_capacity(s.len());
     let mut prev_is_underscore = true;
     for c in s.chars() {
         if c == '_' {
             prev_is_underscore = true;
-        } else if prev_is_underscore {
+        }
+        else if prev_is_underscore {
             buf.push(c.to_ascii_uppercase());
             prev_is_underscore = false;
-        } else {
+        }
+        else {
             buf.push(c.to_ascii_lowercase());
         }
     }
     buf
 }
 
-fn pluralize(s: &str) -> String {
-    format!("{}s", s)
-}
+fn pluralize(s: &str) -> String { format!("{}s", s) }
 
-impl Field {
-    fn is_many(&self) -> bool {
-        matches!(
-            self,
-            Field::Node {
-                cardinality: Cardinality::Many,
-                ..
-            }
-        )
+impl Field
+{
+    fn is_many(&self) -> bool
+    {
+        matches!(self, Field::Node { cardinality:
+                                         Cardinality::Many,
+                                     .. })
     }
 
-    fn token_kind(&self) -> Option<proc_macro2::TokenStream> {
+    fn token_kind(&self) -> Option<proc_macro2::TokenStream>
+    {
         match self {
             Field::Token(token) => {
                 let token: proc_macro2::TokenStream = token.parse().unwrap();
@@ -545,7 +565,8 @@ impl Field {
         }
     }
 
-    fn method_name(&self) -> proc_macro2::Ident {
+    fn method_name(&self) -> proc_macro2::Ident
+    {
         match self {
             Field::Token(name) => {
                 let name = match name.as_str() {
@@ -596,14 +617,16 @@ impl Field {
             Field::Node { name, .. } => {
                 if name == "type" {
                     format_ident!("ty")
-                } else {
+                }
+                else {
                     format_ident!("{}", name)
                 }
             }
         }
     }
 
-    fn ty(&self) -> proc_macro2::Ident {
+    fn ty(&self) -> proc_macro2::Ident
+    {
         match self {
             Field::Token(_) => format_ident!("SyntaxToken"),
             Field::Node { ty, .. } => format_ident!("{}", ty),
@@ -611,15 +634,15 @@ impl Field {
     }
 }
 
-fn lower(grammar: &Grammar) -> AstSrc {
-    let mut res = AstSrc {
-        tokens: "Whitespace Comment BlockComment Str MultilineStr IntNumber \
-                 FloatNumber Ident"
-            .split_ascii_whitespace()
-            .map(|it| it.to_string())
-            .collect::<Vec<_>>(),
-        ..Default::default()
-    };
+fn lower(grammar: &Grammar) -> AstSrc
+{
+    let mut res = AstSrc { tokens: "Whitespace Comment BlockComment Str \
+                                    MultilineStr IntNumber FloatNumber \
+                                    Ident"
+                                          .split_ascii_whitespace()
+                                          .map(|it| it.to_string())
+                                          .collect::<Vec<_>>(),
+                           ..Default::default() };
 
     let nodes = grammar.iter().collect::<Vec<_>>();
 
@@ -628,23 +651,19 @@ fn lower(grammar: &Grammar) -> AstSrc {
         let rule = &grammar[node].rule;
         match lower_enum(grammar, rule) {
             Some(variants) => {
-                let enum_src = AstEnumSrc {
-                    doc: Vec::new(),
-                    name,
-                    traits: Vec::new(),
-                    variants,
-                };
+                let enum_src = AstEnumSrc { doc: Vec::new(),
+                                            name,
+                                            traits: Vec::new(),
+                                            variants };
                 res.enums.push(enum_src);
             }
             None => {
                 let mut fields = Vec::new();
                 lower_rule(&mut fields, grammar, None, rule);
-                res.nodes.push(AstNodeSrc {
-                    doc: Vec::new(),
-                    name,
-                    traits: Vec::new(),
-                    fields,
-                });
+                res.nodes.push(AstNodeSrc { doc: Vec::new(),
+                                            name,
+                                            traits: Vec::new(),
+                                            fields });
             }
         }
     }
@@ -656,7 +675,8 @@ fn lower(grammar: &Grammar) -> AstSrc {
     res
 }
 
-fn lower_enum(grammar: &Grammar, rule: &Rule) -> Option<Vec<String>> {
+fn lower_enum(grammar: &Grammar, rule: &Rule) -> Option<Vec<String>>
+{
     let alternatives = match rule {
         Rule::Alt(it) => it,
         _ => return None,
@@ -672,14 +692,13 @@ fn lower_enum(grammar: &Grammar, rule: &Rule) -> Option<Vec<String>> {
     Some(variants)
 }
 
-fn lower_rule(
-    acc: &mut Vec<Field>,
-    grammar: &Grammar,
-    label: Option<&String>,
-    rule: &Rule,
-) {
+fn lower_rule(acc: &mut Vec<Field>,
+              grammar: &Grammar,
+              label: Option<&String>,
+              rule: &Rule)
+{
     if lower_comma_list(acc, grammar, label, rule) {
-        return;
+        return
     }
 
     match rule {
@@ -687,11 +706,9 @@ fn lower_rule(
             let ty = grammar[*node].name.clone();
             let name =
                 label.cloned().unwrap_or_else(|| to_lower_snake_case(&ty));
-            let field = Field::Node {
-                name,
-                ty,
-                cardinality: Cardinality::Optional,
-            };
+            let field = Field::Node { name,
+                                      ty,
+                                      cardinality: Cardinality::Optional };
             acc.push(field);
         }
         Rule::Token(token) => {
@@ -708,25 +725,25 @@ fn lower_rule(
         Rule::Rep(inner) => {
             if let Rule::Node(node) = &**inner {
                 let ty = grammar[*node].name.clone();
-                let name = label
-                    .cloned()
-                    .unwrap_or_else(|| pluralize(&to_lower_snake_case(&ty)));
-                let field = Field::Node {
-                    name,
-                    ty,
-                    cardinality: Cardinality::Many,
-                };
+                let name =
+                    label.cloned().unwrap_or_else(|| {
+                                      pluralize(&to_lower_snake_case(&ty))
+                                  });
+                let field = Field::Node { name,
+                                          ty,
+                                          cardinality: Cardinality::Many };
                 acc.push(field);
-                return;
+                return
             }
             panic!("unhandled rule: {:?}", rule)
         }
         Rule::Labeled { label: l, rule } => {
             assert!(label.is_none());
             let manually_implemented =
-                matches!(l.as_str(), "lhs" | "rhs" | "op" | "index" | "base");
+                matches!(l.as_str(),
+                         "lhs" | "rhs" | "op" | "index" | "base");
             if manually_implemented {
-                return;
+                return
             }
             lower_rule(acc, grammar, Some(l), rule);
         }
@@ -740,22 +757,20 @@ fn lower_rule(
 }
 
 // (T (',' T)* ','?)
-fn lower_comma_list(
-    acc: &mut Vec<Field>,
-    grammar: &Grammar,
-    label: Option<&String>,
-    rule: &Rule,
-) -> bool {
+fn lower_comma_list(acc: &mut Vec<Field>,
+                    grammar: &Grammar,
+                    label: Option<&String>,
+                    rule: &Rule)
+                    -> bool
+{
     let rule = match rule {
         Rule::Seq(it) => it,
         _ => return false,
     };
     let (node, repeat, trailing_comma) = match rule.as_slice() {
-        [
-            Rule::Node(node),
-            Rule::Rep(repeat),
-            Rule::Opt(trailing_comma),
-        ] => (node, repeat, trailing_comma),
+        [Rule::Node(node),
+         Rule::Rep(repeat),
+         Rule::Opt(trailing_comma)] => (node, repeat, trailing_comma),
         _ => return false,
     };
     let repeat = match &**repeat {
@@ -767,19 +782,17 @@ fn lower_comma_list(
         _ => return false,
     }
     let ty = grammar[*node].name.clone();
-    let name = label
-        .cloned()
-        .unwrap_or_else(|| pluralize(&to_lower_snake_case(&ty)));
-    let field = Field::Node {
-        name,
-        ty,
-        cardinality: Cardinality::Many,
-    };
+    let name = label.cloned()
+                    .unwrap_or_else(|| pluralize(&to_lower_snake_case(&ty)));
+    let field = Field::Node { name,
+                              ty,
+                              cardinality: Cardinality::Many };
     acc.push(field);
     true
 }
 
-fn deduplicate_fields(ast: &mut AstSrc) {
+fn deduplicate_fields(ast: &mut AstSrc)
+{
     for node in &mut ast.nodes {
         let mut i = 0;
         'outer: while i < node.fields.len() {
@@ -788,7 +801,7 @@ fn deduplicate_fields(ast: &mut AstSrc) {
                 let f2 = &node.fields[j];
                 if f1 == f2 {
                     node.fields.remove(i);
-                    continue 'outer;
+                    continue 'outer
                 }
             }
             i += 1;
@@ -796,7 +809,8 @@ fn deduplicate_fields(ast: &mut AstSrc) {
     }
 }
 
-fn extract_enums(ast: &mut AstSrc) {
+fn extract_enums(ast: &mut AstSrc)
+{
     for node in &mut ast.nodes {
         for enm in &ast.enums {
             let mut to_remove = Vec::new();
@@ -810,27 +824,26 @@ fn extract_enums(ast: &mut AstSrc) {
                 node.remove_field(to_remove);
                 let ty = enm.name.clone();
                 let name = to_lower_snake_case(&ty);
-                node.fields.push(Field::Node {
-                    name,
-                    ty,
-                    cardinality: Cardinality::Optional,
-                });
+                node.fields
+                    .push(Field::Node { name,
+                                        ty,
+                                        cardinality: Cardinality::Optional });
             }
         }
     }
 }
 
-fn extract_struct_traits(ast: &mut AstSrc) {
-    let traits: &[(&str, &[&str])] = &[
-        ("HasAttrs", &["attrs"]),
-        ("HasName", &["name"]),
-        ("HasVisibility", &["visibility"]),
-        ("HasGenericParams", &["generic_param_list", "where_clause"]),
-        ("HasTypeBounds", &["type_bound_list", "colon_token"]),
-        ("HasModuleItem", &["items"]),
-        ("HasLoopBody", &["label", "loop_body"]),
-        ("HasArgList", &["arg_list"]),
-    ];
+fn extract_struct_traits(ast: &mut AstSrc)
+{
+    let traits: &[(&str, &[&str])] =
+        &[("HasAttrs", &["attrs"]),
+          ("HasName", &["name"]),
+          ("HasVisibility", &["visibility"]),
+          ("HasGenericParams", &["generic_param_list", "where_clause"]),
+          ("HasTypeBounds", &["type_bound_list", "colon_token"]),
+          ("HasModuleItem", &["items"]),
+          ("HasLoopBody", &["label", "loop_body"]),
+          ("HasArgList", &["arg_list"])];
 
     for node in &mut ast.nodes {
         for (name, methods) in traits {
@@ -839,11 +852,10 @@ fn extract_struct_traits(ast: &mut AstSrc) {
     }
 }
 
-fn extract_struct_trait(
-    node: &mut AstNodeSrc,
-    trait_name: &str,
-    methods: &[&str],
-) {
+fn extract_struct_trait(node: &mut AstNodeSrc,
+                        trait_name: &str,
+                        methods: &[&str])
+{
     let mut to_remove = Vec::new();
     for (i, field) in node.fields.iter().enumerate() {
         let method_name = field.method_name().to_string();
@@ -857,17 +869,20 @@ fn extract_struct_trait(
     }
 }
 
-fn extract_enum_traits(ast: &mut AstSrc) {
+fn extract_enum_traits(ast: &mut AstSrc)
+{
     for enm in &mut ast.enums {
         // if enm.name == "Stmt" {
         //     continue;
         // }
         let nodes = &ast.nodes;
-        let mut variant_traits = enm
-            .variants
-            .iter()
-            .map(|var| nodes.iter().find(|it| &it.name == var).unwrap())
-            .map(|node| node.traits.iter().cloned().collect::<BTreeSet<_>>());
+        let mut variant_traits =
+            enm.variants
+               .iter()
+               .map(|var| nodes.iter().find(|it| &it.name == var).unwrap())
+               .map(|node| {
+                   node.traits.iter().cloned().collect::<BTreeSet<_>>()
+               });
 
         let mut enum_traits = match variant_traits.next() {
             Some(it) => it,
@@ -880,10 +895,12 @@ fn extract_enum_traits(ast: &mut AstSrc) {
     }
 }
 
-impl AstNodeSrc {
-    fn remove_field(&mut self, to_remove: Vec<usize>) {
+impl AstNodeSrc
+{
+    fn remove_field(&mut self, to_remove: Vec<usize>)
+    {
         to_remove.into_iter().rev().for_each(|idx| {
-            self.fields.remove(idx);
-        });
+                                       self.fields.remove(idx);
+                                   });
     }
 }

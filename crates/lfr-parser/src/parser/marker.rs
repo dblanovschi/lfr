@@ -1,30 +1,35 @@
 use drop_bomb::DropBomb;
-use lfr_syntax::syntax_kind::SyntaxKind::{self, *};
+use lfr_syntax::syntax_kind::SyntaxKind::{
+    self,
+    *,
+};
 
 use crate::parser::event::Event;
 use crate::parser::Parser;
 
-pub struct Marker {
-    pos: u32,
+pub struct Marker
+{
+    pos:  u32,
     bomb: DropBomb,
 }
 
-impl Marker {
-    pub fn new(pos: u32) -> Self {
-        Marker {
-            pos,
-            bomb: DropBomb::new("Marker must be either completed or abandoned"),
-        }
+impl Marker
+{
+    pub fn new(pos: u32) -> Self
+    {
+        Marker { pos,
+                 bomb: DropBomb::new("Marker must be either completed or \
+                                      abandoned") }
     }
 
     /// Finishes the syntax tree node and assigns `kind` to it,
     /// and mark the create a `CompletedMarker` for possible future
     /// operation like `.precede()` to deal with forward_parent.
-    pub(crate) fn complete(
-        mut self,
-        p: &mut Parser,
-        kind: SyntaxKind,
-    ) -> CompletedMarker {
+    pub(crate) fn complete(mut self,
+                           p: &mut Parser,
+                           kind: SyntaxKind)
+                           -> CompletedMarker
+    {
         self.bomb.defuse();
         let idx = self.pos as usize;
         match &mut p.events[idx] {
@@ -40,34 +45,34 @@ impl Marker {
 
     /// Abandons the syntax tree node. All its children
     /// are attached to its parent instead.
-    pub(crate) fn abandon(mut self, p: &mut Parser) {
+    pub(crate) fn abandon(mut self, p: &mut Parser)
+    {
         self.bomb.defuse();
         let idx = self.pos as usize;
         if idx == p.events.len() - 1 {
             match p.events.pop() {
-                Some(Event::Start {
-                    kind: TOMBSTONE,
-                    forward_parent: None,
-                }) => (),
+                Some(Event::Start { kind: TOMBSTONE,
+                                    forward_parent: None, }) => (),
                 _ => unreachable!(),
             }
         }
     }
 }
 
-pub(crate) struct CompletedMarker {
-    start_pos: u32,
+pub(crate) struct CompletedMarker
+{
+    start_pos:  u32,
     finish_pos: u32,
-    kind: SyntaxKind,
+    kind:       SyntaxKind,
 }
 
-impl CompletedMarker {
-    fn new(start_pos: u32, finish_pos: u32, kind: SyntaxKind) -> Self {
-        CompletedMarker {
-            start_pos,
-            finish_pos,
-            kind,
-        }
+impl CompletedMarker
+{
+    fn new(start_pos: u32, finish_pos: u32, kind: SyntaxKind) -> Self
+    {
+        CompletedMarker { start_pos,
+                          finish_pos,
+                          kind }
     }
 
     /// This method allows to create a new node which starts
@@ -82,7 +87,8 @@ impl CompletedMarker {
     /// Append a new `START` events as `[START, FINISH, NEWSTART]`,
     /// then mark `NEWSTART` as `START`'s parent with saving its relative
     /// distance to `NEWSTART` into forward_parent(=2 in this case);
-    pub(crate) fn precede(self, p: &mut Parser) -> Marker {
+    pub(crate) fn precede(self, p: &mut Parser) -> Marker
+    {
         let new_pos = p.start();
         let idx = self.start_pos as usize;
         match &mut p.events[idx] {
@@ -95,14 +101,13 @@ impl CompletedMarker {
     }
 
     /// Undo this completion and turns into a `Marker`
-    pub(crate) fn undo_completion(self, p: &mut Parser) -> Marker {
+    pub(crate) fn undo_completion(self, p: &mut Parser) -> Marker
+    {
         let start_idx = self.start_pos as usize;
         let finish_idx = self.finish_pos as usize;
         match &mut p.events[start_idx] {
-            Event::Start {
-                kind,
-                forward_parent: None,
-            } => *kind = TOMBSTONE,
+            Event::Start { kind,
+                           forward_parent: None, } => *kind = TOMBSTONE,
             _ => unreachable!(),
         }
         match &mut p.events[finish_idx] {
@@ -112,7 +117,5 @@ impl CompletedMarker {
         Marker::new(self.start_pos)
     }
 
-    pub(crate) fn kind(&self) -> SyntaxKind {
-        self.kind
-    }
+    pub(crate) fn kind(&self) -> SyntaxKind { self.kind }
 }

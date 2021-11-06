@@ -2,7 +2,8 @@ use lfr_syntax::syntax_kind::SyntaxKind;
 
 use super::error::ParseError;
 /// A CST builder.
-pub trait TreeSink {
+pub trait TreeSink
+{
     /// Adds a token to the tree, on the current branch, merging together
     /// `n_raw_tokens` tokens and with kind `kind`.
     fn token(&mut self, kind: SyntaxKind, n_raw_tokens: u8);

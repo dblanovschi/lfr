@@ -2,530 +2,614 @@
 
 #![allow(unused_imports)]
 
-use crate::ast::{self, support, AstChildren, AstNode};
-use crate::SyntaxKind::{self, *};
-use crate::{SyntaxNode, SyntaxToken, T};
+use crate::ast::{
+    self,
+    support,
+    AstChildren,
+    AstNode,
+};
+use crate::SyntaxKind::{
+    self,
+    *,
+};
+use crate::{
+    SyntaxNode,
+    SyntaxToken,
+    T,
+};
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Root {
+pub struct Root
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl Root {
-    pub fn import_stmts(&self) -> AstChildren<ImportStmt> {
+impl Root
+{
+    pub fn import_stmts(&self) -> AstChildren<ImportStmt>
+    {
         support::children(&self.syntax)
     }
 
-    pub fn stmts(&self) -> AstChildren<Stmt> {
-        support::children(&self.syntax)
-    }
+    pub fn stmts(&self) -> AstChildren<Stmt> { support::children(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ImportStmt {
+pub struct ImportStmt
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl ImportStmt {
-    pub fn import_token(&self) -> Option<SyntaxToken> {
+impl ImportStmt
+{
+    pub fn import_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![import])
     }
 
-    pub fn import_target(&self) -> Option<ImportTarget> {
+    pub fn import_target(&self) -> Option<ImportTarget>
+    {
         support::child(&self.syntax)
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ImportTarget {
+pub struct ImportTarget
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl ImportTarget {
-    pub fn ident_token(&self) -> Option<SyntaxToken> {
+impl ImportTarget
+{
+    pub fn ident_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![ident])
     }
 
-    pub fn string_lit(&self) -> Option<StringLit> {
+    pub fn string_lit(&self) -> Option<StringLit>
+    {
         support::child(&self.syntax)
     }
 
-    pub fn as_token(&self) -> Option<SyntaxToken> {
+    pub fn as_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![as])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct StringLit {
+pub struct StringLit
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl StringLit {
-    pub fn str_token(&self) -> Option<SyntaxToken> {
+impl StringLit
+{
+    pub fn str_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![str])
     }
 
-    pub fn multiline_str_token(&self) -> Option<SyntaxToken> {
+    pub fn multiline_str_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![multiline_str])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Name {
+pub struct Name
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl Name {
-    pub fn ident_token(&self) -> Option<SyntaxToken> {
+impl Name
+{
+    pub fn ident_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![ident])
     }
 
-    pub fn this_token(&self) -> Option<SyntaxToken> {
+    pub fn this_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![this])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct NumberLit {
+pub struct NumberLit
+{
     pub(crate) syntax: SyntaxNode,
 }
 impl NumberLit {}
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct BooleanLit {
+pub struct BooleanLit
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl BooleanLit {
-    pub fn true_token(&self) -> Option<SyntaxToken> {
+impl BooleanLit
+{
+    pub fn true_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![true])
     }
 
-    pub fn false_token(&self) -> Option<SyntaxToken> {
+    pub fn false_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![false])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct LitVal {
+pub struct LitVal
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl LitVal {
-    pub fn inner(&self) -> Option<LitValInner> {
-        support::child(&self.syntax)
-    }
+impl LitVal
+{
+    pub fn inner(&self) -> Option<LitValInner> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct FnDef {
+pub struct FnDef
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl FnDef {
-    pub fn fn_token(&self) -> Option<SyntaxToken> {
+impl FnDef
+{
+    pub fn fn_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![fn])
     }
 
-    pub fn ident_token(&self) -> Option<SyntaxToken> {
+    pub fn ident_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![ident])
     }
 
-    pub fn l_paren_token(&self) -> Option<SyntaxToken> {
+    pub fn l_paren_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T!['('])
     }
 
-    pub fn r_paren_token(&self) -> Option<SyntaxToken> {
+    pub fn r_paren_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![')'])
     }
 
-    pub fn block(&self) -> Option<Block> {
-        support::child(&self.syntax)
-    }
+    pub fn block(&self) -> Option<Block> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Block {
+pub struct Block
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl Block {
-    pub fn l_curly_token(&self) -> Option<SyntaxToken> {
+impl Block
+{
+    pub fn l_curly_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T!['{'])
     }
 
-    pub fn stmts(&self) -> AstChildren<Stmt> {
-        support::children(&self.syntax)
-    }
+    pub fn stmts(&self) -> AstChildren<Stmt> { support::children(&self.syntax) }
 
-    pub fn r_curly_token(&self) -> Option<SyntaxToken> {
+    pub fn r_curly_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T!['}'])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExprStmt {
+pub struct ExprStmt
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl ExprStmt {
-    pub fn expr(&self) -> Option<Expr> {
-        support::child(&self.syntax)
-    }
+impl ExprStmt
+{
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
 
-    pub fn semicolon_token(&self) -> Option<SyntaxToken> {
+    pub fn semicolon_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T ! [;])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct DeclarationStmt {
+pub struct DeclarationStmt
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl DeclarationStmt {
-    pub fn let_token(&self) -> Option<SyntaxToken> {
+impl DeclarationStmt
+{
+    pub fn let_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![let])
     }
 
-    pub fn ident_token(&self) -> Option<SyntaxToken> {
+    pub fn ident_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![ident])
     }
 
-    pub fn eq_token(&self) -> Option<SyntaxToken> {
+    pub fn eq_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T ! [=])
     }
 
-    pub fn expr(&self) -> Option<Expr> {
-        support::child(&self.syntax)
-    }
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
 
-    pub fn semicolon_token(&self) -> Option<SyntaxToken> {
+    pub fn semicolon_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T ! [;])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct WhileStmt {
+pub struct WhileStmt
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl WhileStmt {
-    pub fn while_token(&self) -> Option<SyntaxToken> {
+impl WhileStmt
+{
+    pub fn while_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![while])
     }
 
-    pub fn expr(&self) -> Option<Expr> {
-        support::child(&self.syntax)
-    }
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
 
-    pub fn block(&self) -> Option<Block> {
-        support::child(&self.syntax)
-    }
+    pub fn block(&self) -> Option<Block> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ForStmt {
+pub struct ForStmt
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl ForStmt {
-    pub fn for_token(&self) -> Option<SyntaxToken> {
+impl ForStmt
+{
+    pub fn for_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![for])
     }
 
-    pub fn ident_token(&self) -> Option<SyntaxToken> {
+    pub fn ident_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![ident])
     }
 
-    pub fn in_token(&self) -> Option<SyntaxToken> {
+    pub fn in_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![in])
     }
 
-    pub fn expr(&self) -> Option<Expr> {
-        support::child(&self.syntax)
-    }
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
 
-    pub fn block(&self) -> Option<Block> {
-        support::child(&self.syntax)
-    }
+    pub fn block(&self) -> Option<Block> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct BinExpr {
+pub struct BinExpr
+{
     pub(crate) syntax: SyntaxNode,
 }
 impl BinExpr {}
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct TupleExpr {
+pub struct TupleExpr
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl TupleExpr {
-    pub fn l_paren_token(&self) -> Option<SyntaxToken> {
+impl TupleExpr
+{
+    pub fn l_paren_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T!['('])
     }
 
-    pub fn exprs(&self) -> AstChildren<Expr> {
-        support::children(&self.syntax)
-    }
+    pub fn exprs(&self) -> AstChildren<Expr> { support::children(&self.syntax) }
 
-    pub fn r_paren_token(&self) -> Option<SyntaxToken> {
+    pub fn r_paren_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![')'])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ArrExpr {
+pub struct ArrExpr
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl ArrExpr {
-    pub fn l_brack_token(&self) -> Option<SyntaxToken> {
+impl ArrExpr
+{
+    pub fn l_brack_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T!['['])
     }
 
-    pub fn exprs(&self) -> AstChildren<Expr> {
-        support::children(&self.syntax)
-    }
+    pub fn exprs(&self) -> AstChildren<Expr> { support::children(&self.syntax) }
 
-    pub fn r_brack_token(&self) -> Option<SyntaxToken> {
+    pub fn r_brack_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![']'])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct PrimaryExpr {
+pub struct PrimaryExpr
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl PrimaryExpr {
-    pub fn inner(&self) -> Option<PrimaryExprInner> {
+impl PrimaryExpr
+{
+    pub fn inner(&self) -> Option<PrimaryExprInner>
+    {
         support::child(&self.syntax)
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Path {
+pub struct Path
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl Path {
-    pub fn colon2_token(&self) -> Option<SyntaxToken> {
+impl Path
+{
+    pub fn colon2_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T ! [::])
     }
 
-    pub fn ident_token(&self) -> Option<SyntaxToken> {
+    pub fn ident_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![ident])
     }
 
-    pub fn path_frags(&self) -> AstChildren<PathFrag> {
+    pub fn path_frags(&self) -> AstChildren<PathFrag>
+    {
         support::children(&self.syntax)
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct IfExpr {
+pub struct IfExpr
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl IfExpr {
-    pub fn if_branch(&self) -> Option<IfBranch> {
-        support::child(&self.syntax)
-    }
+impl IfExpr
+{
+    pub fn if_branch(&self) -> Option<IfBranch> { support::child(&self.syntax) }
 
-    pub fn else_if_branchs(&self) -> AstChildren<ElseIfBranch> {
+    pub fn else_if_branchs(&self) -> AstChildren<ElseIfBranch>
+    {
         support::children(&self.syntax)
     }
 
-    pub fn else_branch(&self) -> Option<ElseBranch> {
+    pub fn else_branch(&self) -> Option<ElseBranch>
+    {
         support::child(&self.syntax)
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct BreakStmt {
+pub struct BreakStmt
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl BreakStmt {
-    pub fn break_token(&self) -> Option<SyntaxToken> {
+impl BreakStmt
+{
+    pub fn break_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![break])
     }
 
-    pub fn expr(&self) -> Option<Expr> {
-        support::child(&self.syntax)
-    }
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ContinueStmt {
+pub struct ContinueStmt
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl ContinueStmt {
-    pub fn continue_token(&self) -> Option<SyntaxToken> {
+impl ContinueStmt
+{
+    pub fn continue_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![continue])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ReturnStmt {
+pub struct ReturnStmt
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl ReturnStmt {
-    pub fn return_token(&self) -> Option<SyntaxToken> {
+impl ReturnStmt
+{
+    pub fn return_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![return])
     }
 
-    pub fn expr(&self) -> Option<Expr> {
-        support::child(&self.syntax)
-    }
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct PathFrag {
+pub struct PathFrag
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl PathFrag {
-    pub fn colon2_token(&self) -> Option<SyntaxToken> {
+impl PathFrag
+{
+    pub fn colon2_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T ! [::])
     }
 
-    pub fn ident_token(&self) -> Option<SyntaxToken> {
+    pub fn ident_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![ident])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct FnCallExpr {
+pub struct FnCallExpr
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl FnCallExpr {
-    pub fn expr(&self) -> Option<Expr> {
-        support::child(&self.syntax)
-    }
+impl FnCallExpr
+{
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
 
-    pub fn fn_call_args(&self) -> Option<FnCallArgs> {
+    pub fn fn_call_args(&self) -> Option<FnCallArgs>
+    {
         support::child(&self.syntax)
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct FnCallArgs {
+pub struct FnCallArgs
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl FnCallArgs {
-    pub fn l_paren_token(&self) -> Option<SyntaxToken> {
+impl FnCallArgs
+{
+    pub fn l_paren_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T!['('])
     }
 
-    pub fn exprs(&self) -> AstChildren<Expr> {
-        support::children(&self.syntax)
-    }
+    pub fn exprs(&self) -> AstChildren<Expr> { support::children(&self.syntax) }
 
-    pub fn r_paren_token(&self) -> Option<SyntaxToken> {
+    pub fn r_paren_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![')'])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct MethodCallExpr {
+pub struct MethodCallExpr
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl MethodCallExpr {
-    pub fn expr(&self) -> Option<Expr> {
-        support::child(&self.syntax)
-    }
+impl MethodCallExpr
+{
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
 
-    pub fn dot_token(&self) -> Option<SyntaxToken> {
+    pub fn dot_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T ! [.])
     }
 
-    pub fn ident_token(&self) -> Option<SyntaxToken> {
+    pub fn ident_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![ident])
     }
 
-    pub fn fn_call_args(&self) -> Option<FnCallArgs> {
+    pub fn fn_call_args(&self) -> Option<FnCallArgs>
+    {
         support::child(&self.syntax)
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct PrefixUnaryExpr {
+pub struct PrefixUnaryExpr
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl PrefixUnaryExpr {
-    pub fn expr(&self) -> Option<Expr> {
-        support::child(&self.syntax)
-    }
+impl PrefixUnaryExpr
+{
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct IndexExpr {
+pub struct IndexExpr
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl IndexExpr {
-    pub fn expr(&self) -> Option<Expr> {
-        support::child(&self.syntax)
-    }
+impl IndexExpr
+{
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
 
-    pub fn index_expr_brackets(&self) -> Option<IndexExprBrackets> {
+    pub fn index_expr_brackets(&self) -> Option<IndexExprBrackets>
+    {
         support::child(&self.syntax)
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct IndexExprBrackets {
+pub struct IndexExprBrackets
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl IndexExprBrackets {
-    pub fn l_brack_token(&self) -> Option<SyntaxToken> {
+impl IndexExprBrackets
+{
+    pub fn l_brack_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T!['['])
     }
 
-    pub fn expr(&self) -> Option<Expr> {
-        support::child(&self.syntax)
-    }
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
 
-    pub fn r_brack_token(&self) -> Option<SyntaxToken> {
+    pub fn r_brack_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![']'])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct MemberAccessExpr {
+pub struct MemberAccessExpr
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl MemberAccessExpr {
-    pub fn expr(&self) -> Option<Expr> {
-        support::child(&self.syntax)
-    }
+impl MemberAccessExpr
+{
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
 
-    pub fn dot_token(&self) -> Option<SyntaxToken> {
+    pub fn dot_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T ! [.])
     }
 
-    pub fn ident_token(&self) -> Option<SyntaxToken> {
+    pub fn ident_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![ident])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct IfBranch {
+pub struct IfBranch
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl IfBranch {
-    pub fn if_token(&self) -> Option<SyntaxToken> {
+impl IfBranch
+{
+    pub fn if_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![if])
     }
 
-    pub fn expr(&self) -> Option<Expr> {
-        support::child(&self.syntax)
-    }
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
 
-    pub fn block(&self) -> Option<Block> {
-        support::child(&self.syntax)
-    }
+    pub fn block(&self) -> Option<Block> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ElseIfBranch {
+pub struct ElseIfBranch
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl ElseIfBranch {
-    pub fn else_token(&self) -> Option<SyntaxToken> {
+impl ElseIfBranch
+{
+    pub fn else_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![else])
     }
 
-    pub fn if_token(&self) -> Option<SyntaxToken> {
+    pub fn if_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![if])
     }
 
-    pub fn expr(&self) -> Option<Expr> {
-        support::child(&self.syntax)
-    }
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
 
-    pub fn block(&self) -> Option<Block> {
-        support::child(&self.syntax)
-    }
+    pub fn block(&self) -> Option<Block> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ElseBranch {
+pub struct ElseBranch
+{
     pub(crate) syntax: SyntaxNode,
 }
-impl ElseBranch {
-    pub fn else_token(&self) -> Option<SyntaxToken> {
+impl ElseBranch
+{
+    pub fn else_token(&self) -> Option<SyntaxToken>
+    {
         support::token(&self.syntax, T![else])
     }
 
-    pub fn block(&self) -> Option<Block> {
-        support::child(&self.syntax)
-    }
+    pub fn block(&self) -> Option<Block> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Stmt {
+pub enum Stmt
+{
     ExprStmt(ExprStmt),
     DeclarationStmt(DeclarationStmt),
     WhileStmt(WhileStmt),
     ForStmt(ForStmt),
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum LitValInner {
+pub enum LitValInner
+{
     StringLit(StringLit),
     NumberLit(NumberLit),
     BooleanLit(BooleanLit),
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Expr {
+pub enum Expr
+{
     PrimaryExpr(PrimaryExpr),
     BinExpr(BinExpr),
     PrefixUnaryExpr(PrefixUnaryExpr),
@@ -536,7 +620,8 @@ pub enum Expr {
     FnDef(FnDef),
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum PrimaryExprInner {
+pub enum PrimaryExprInner
+{
     TupleExpr(TupleExpr),
     ArrExpr(ArrExpr),
     Block(Block),
@@ -547,613 +632,578 @@ pub enum PrimaryExprInner {
     ContinueStmt(ContinueStmt),
     ReturnStmt(ReturnStmt),
 }
-impl AstNode for Root {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == ROOT
-    }
+impl AstNode for Root
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == ROOT }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for ImportStmt {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == IMPORT_STMT
-    }
+impl AstNode for ImportStmt
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == IMPORT_STMT }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for ImportTarget {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == IMPORT_TARGET
-    }
+impl AstNode for ImportTarget
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == IMPORT_TARGET }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for StringLit {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == STRING_LIT
-    }
+impl AstNode for StringLit
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == STRING_LIT }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for Name {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == NAME
-    }
+impl AstNode for Name
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == NAME }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for NumberLit {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == NUMBER_LIT
-    }
+impl AstNode for NumberLit
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == NUMBER_LIT }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for BooleanLit {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == BOOLEAN_LIT
-    }
+impl AstNode for BooleanLit
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == BOOLEAN_LIT }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for LitVal {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == LIT_VAL
-    }
+impl AstNode for LitVal
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == LIT_VAL }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for FnDef {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == FN_DEF
-    }
+impl AstNode for FnDef
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == FN_DEF }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for Block {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == BLOCK
-    }
+impl AstNode for Block
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == BLOCK }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for ExprStmt {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == EXPR_STMT
-    }
+impl AstNode for ExprStmt
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == EXPR_STMT }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for DeclarationStmt {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == DECLARATION_STMT
-    }
+impl AstNode for DeclarationStmt
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == DECLARATION_STMT }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for WhileStmt {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == WHILE_STMT
-    }
+impl AstNode for WhileStmt
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == WHILE_STMT }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for ForStmt {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == FOR_STMT
-    }
+impl AstNode for ForStmt
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == FOR_STMT }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for BinExpr {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == BIN_EXPR
-    }
+impl AstNode for BinExpr
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == BIN_EXPR }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for TupleExpr {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == TUPLE_EXPR
-    }
+impl AstNode for TupleExpr
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == TUPLE_EXPR }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for ArrExpr {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == ARR_EXPR
-    }
+impl AstNode for ArrExpr
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == ARR_EXPR }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for PrimaryExpr {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == PRIMARY_EXPR
-    }
+impl AstNode for PrimaryExpr
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == PRIMARY_EXPR }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for Path {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == PATH
-    }
+impl AstNode for Path
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == PATH }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for IfExpr {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == IF_EXPR
-    }
+impl AstNode for IfExpr
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == IF_EXPR }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for BreakStmt {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == BREAK_STMT
-    }
+impl AstNode for BreakStmt
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == BREAK_STMT }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for ContinueStmt {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == CONTINUE_STMT
-    }
+impl AstNode for ContinueStmt
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == CONTINUE_STMT }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for ReturnStmt {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == RETURN_STMT
-    }
+impl AstNode for ReturnStmt
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == RETURN_STMT }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for PathFrag {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == PATH_FRAG
-    }
+impl AstNode for PathFrag
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == PATH_FRAG }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for FnCallExpr {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == FN_CALL_EXPR
-    }
+impl AstNode for FnCallExpr
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == FN_CALL_EXPR }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for FnCallArgs {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == FN_CALL_ARGS
-    }
+impl AstNode for FnCallArgs
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == FN_CALL_ARGS }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for MethodCallExpr {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == METHOD_CALL_EXPR
-    }
+impl AstNode for MethodCallExpr
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == METHOD_CALL_EXPR }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for PrefixUnaryExpr {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == PREFIX_UNARY_EXPR
-    }
+impl AstNode for PrefixUnaryExpr
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == PREFIX_UNARY_EXPR }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for IndexExpr {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == INDEX_EXPR
-    }
+impl AstNode for IndexExpr
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == INDEX_EXPR }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for IndexExprBrackets {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == INDEX_EXPR_BRACKETS
-    }
+impl AstNode for IndexExprBrackets
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == INDEX_EXPR_BRACKETS }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for MemberAccessExpr {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == MEMBER_ACCESS_EXPR
-    }
+impl AstNode for MemberAccessExpr
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == MEMBER_ACCESS_EXPR }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for IfBranch {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == IF_BRANCH
-    }
+impl AstNode for IfBranch
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == IF_BRANCH }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for ElseIfBranch {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == ELSE_IF_BRANCH
-    }
+impl AstNode for ElseIfBranch
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == ELSE_IF_BRANCH }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for ElseBranch {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        kind == ELSE_BRANCH
-    }
+impl AstNode for ElseBranch
+{
+    fn can_cast(kind: SyntaxKind) -> bool { kind == ELSE_BRANCH }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
-        } else {
+        }
+        else {
             None
         }
     }
 
-    fn syntax(&self) -> &SyntaxNode {
-        &self.syntax
-    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl From<ExprStmt> for Stmt {
-    fn from(node: ExprStmt) -> Stmt {
-        Stmt::ExprStmt(node)
-    }
+impl From<ExprStmt> for Stmt
+{
+    fn from(node: ExprStmt) -> Stmt { Stmt::ExprStmt(node) }
 }
-impl From<DeclarationStmt> for Stmt {
-    fn from(node: DeclarationStmt) -> Stmt {
-        Stmt::DeclarationStmt(node)
-    }
+impl From<DeclarationStmt> for Stmt
+{
+    fn from(node: DeclarationStmt) -> Stmt { Stmt::DeclarationStmt(node) }
 }
-impl From<WhileStmt> for Stmt {
-    fn from(node: WhileStmt) -> Stmt {
-        Stmt::WhileStmt(node)
-    }
+impl From<WhileStmt> for Stmt
+{
+    fn from(node: WhileStmt) -> Stmt { Stmt::WhileStmt(node) }
 }
-impl From<ForStmt> for Stmt {
-    fn from(node: ForStmt) -> Stmt {
-        Stmt::ForStmt(node)
-    }
+impl From<ForStmt> for Stmt
+{
+    fn from(node: ForStmt) -> Stmt { Stmt::ForStmt(node) }
 }
-impl AstNode for Stmt {
-    fn can_cast(kind: SyntaxKind) -> bool {
+impl AstNode for Stmt
+{
+    fn can_cast(kind: SyntaxKind) -> bool
+    {
         match kind {
             EXPR_STMT | DECLARATION_STMT | WHILE_STMT | FOR_STMT => true,
             _ => false,
         }
     }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         let res = match syntax.kind() {
             EXPR_STMT => Stmt::ExprStmt(ExprStmt { syntax }),
             DECLARATION_STMT => {
@@ -1166,7 +1216,8 @@ impl AstNode for Stmt {
         Some(res)
     }
 
-    fn syntax(&self) -> &SyntaxNode {
+    fn syntax(&self) -> &SyntaxNode
+    {
         match self {
             Stmt::ExprStmt(it) => &it.syntax,
             Stmt::DeclarationStmt(it) => &it.syntax,
@@ -1175,30 +1226,30 @@ impl AstNode for Stmt {
         }
     }
 }
-impl From<StringLit> for LitValInner {
-    fn from(node: StringLit) -> LitValInner {
-        LitValInner::StringLit(node)
-    }
+impl From<StringLit> for LitValInner
+{
+    fn from(node: StringLit) -> LitValInner { LitValInner::StringLit(node) }
 }
-impl From<NumberLit> for LitValInner {
-    fn from(node: NumberLit) -> LitValInner {
-        LitValInner::NumberLit(node)
-    }
+impl From<NumberLit> for LitValInner
+{
+    fn from(node: NumberLit) -> LitValInner { LitValInner::NumberLit(node) }
 }
-impl From<BooleanLit> for LitValInner {
-    fn from(node: BooleanLit) -> LitValInner {
-        LitValInner::BooleanLit(node)
-    }
+impl From<BooleanLit> for LitValInner
+{
+    fn from(node: BooleanLit) -> LitValInner { LitValInner::BooleanLit(node) }
 }
-impl AstNode for LitValInner {
-    fn can_cast(kind: SyntaxKind) -> bool {
+impl AstNode for LitValInner
+{
+    fn can_cast(kind: SyntaxKind) -> bool
+    {
         match kind {
             STRING_LIT | NUMBER_LIT | BOOLEAN_LIT => true,
             _ => false,
         }
     }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         let res = match syntax.kind() {
             STRING_LIT => LitValInner::StringLit(StringLit { syntax }),
             NUMBER_LIT => LitValInner::NumberLit(NumberLit { syntax }),
@@ -1208,7 +1259,8 @@ impl AstNode for LitValInner {
         Some(res)
     }
 
-    fn syntax(&self) -> &SyntaxNode {
+    fn syntax(&self) -> &SyntaxNode
+    {
         match self {
             LitValInner::StringLit(it) => &it.syntax,
             LitValInner::NumberLit(it) => &it.syntax,
@@ -1216,48 +1268,42 @@ impl AstNode for LitValInner {
         }
     }
 }
-impl From<PrimaryExpr> for Expr {
-    fn from(node: PrimaryExpr) -> Expr {
-        Expr::PrimaryExpr(node)
-    }
+impl From<PrimaryExpr> for Expr
+{
+    fn from(node: PrimaryExpr) -> Expr { Expr::PrimaryExpr(node) }
 }
-impl From<BinExpr> for Expr {
-    fn from(node: BinExpr) -> Expr {
-        Expr::BinExpr(node)
-    }
+impl From<BinExpr> for Expr
+{
+    fn from(node: BinExpr) -> Expr { Expr::BinExpr(node) }
 }
-impl From<PrefixUnaryExpr> for Expr {
-    fn from(node: PrefixUnaryExpr) -> Expr {
-        Expr::PrefixUnaryExpr(node)
-    }
+impl From<PrefixUnaryExpr> for Expr
+{
+    fn from(node: PrefixUnaryExpr) -> Expr { Expr::PrefixUnaryExpr(node) }
 }
-impl From<FnCallExpr> for Expr {
-    fn from(node: FnCallExpr) -> Expr {
-        Expr::FnCallExpr(node)
-    }
+impl From<FnCallExpr> for Expr
+{
+    fn from(node: FnCallExpr) -> Expr { Expr::FnCallExpr(node) }
 }
-impl From<IndexExpr> for Expr {
-    fn from(node: IndexExpr) -> Expr {
-        Expr::IndexExpr(node)
-    }
+impl From<IndexExpr> for Expr
+{
+    fn from(node: IndexExpr) -> Expr { Expr::IndexExpr(node) }
 }
-impl From<MemberAccessExpr> for Expr {
-    fn from(node: MemberAccessExpr) -> Expr {
-        Expr::MemberAccessExpr(node)
-    }
+impl From<MemberAccessExpr> for Expr
+{
+    fn from(node: MemberAccessExpr) -> Expr { Expr::MemberAccessExpr(node) }
 }
-impl From<MethodCallExpr> for Expr {
-    fn from(node: MethodCallExpr) -> Expr {
-        Expr::MethodCallExpr(node)
-    }
+impl From<MethodCallExpr> for Expr
+{
+    fn from(node: MethodCallExpr) -> Expr { Expr::MethodCallExpr(node) }
 }
-impl From<FnDef> for Expr {
-    fn from(node: FnDef) -> Expr {
-        Expr::FnDef(node)
-    }
+impl From<FnDef> for Expr
+{
+    fn from(node: FnDef) -> Expr { Expr::FnDef(node) }
 }
-impl AstNode for Expr {
-    fn can_cast(kind: SyntaxKind) -> bool {
+impl AstNode for Expr
+{
+    fn can_cast(kind: SyntaxKind) -> bool
+    {
         match kind {
             PRIMARY_EXPR | BIN_EXPR | PREFIX_UNARY_EXPR | FN_CALL_EXPR
             | INDEX_EXPR | MEMBER_ACCESS_EXPR | METHOD_CALL_EXPR | FN_DEF => {
@@ -1267,7 +1313,8 @@ impl AstNode for Expr {
         }
     }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         let res = match syntax.kind() {
             PRIMARY_EXPR => Expr::PrimaryExpr(PrimaryExpr { syntax }),
             BIN_EXPR => Expr::BinExpr(BinExpr { syntax }),
@@ -1286,7 +1333,8 @@ impl AstNode for Expr {
         Some(res)
     }
 
-    fn syntax(&self) -> &SyntaxNode {
+    fn syntax(&self) -> &SyntaxNode
+    {
         match self {
             Expr::PrimaryExpr(it) => &it.syntax,
             Expr::BinExpr(it) => &it.syntax,
@@ -1299,53 +1347,61 @@ impl AstNode for Expr {
         }
     }
 }
-impl From<TupleExpr> for PrimaryExprInner {
-    fn from(node: TupleExpr) -> PrimaryExprInner {
+impl From<TupleExpr> for PrimaryExprInner
+{
+    fn from(node: TupleExpr) -> PrimaryExprInner
+    {
         PrimaryExprInner::TupleExpr(node)
     }
 }
-impl From<ArrExpr> for PrimaryExprInner {
-    fn from(node: ArrExpr) -> PrimaryExprInner {
+impl From<ArrExpr> for PrimaryExprInner
+{
+    fn from(node: ArrExpr) -> PrimaryExprInner
+    {
         PrimaryExprInner::ArrExpr(node)
     }
 }
-impl From<Block> for PrimaryExprInner {
-    fn from(node: Block) -> PrimaryExprInner {
-        PrimaryExprInner::Block(node)
-    }
+impl From<Block> for PrimaryExprInner
+{
+    fn from(node: Block) -> PrimaryExprInner { PrimaryExprInner::Block(node) }
 }
-impl From<Path> for PrimaryExprInner {
-    fn from(node: Path) -> PrimaryExprInner {
-        PrimaryExprInner::Path(node)
-    }
+impl From<Path> for PrimaryExprInner
+{
+    fn from(node: Path) -> PrimaryExprInner { PrimaryExprInner::Path(node) }
 }
-impl From<LitVal> for PrimaryExprInner {
-    fn from(node: LitVal) -> PrimaryExprInner {
-        PrimaryExprInner::LitVal(node)
-    }
+impl From<LitVal> for PrimaryExprInner
+{
+    fn from(node: LitVal) -> PrimaryExprInner { PrimaryExprInner::LitVal(node) }
 }
-impl From<IfExpr> for PrimaryExprInner {
-    fn from(node: IfExpr) -> PrimaryExprInner {
-        PrimaryExprInner::IfExpr(node)
-    }
+impl From<IfExpr> for PrimaryExprInner
+{
+    fn from(node: IfExpr) -> PrimaryExprInner { PrimaryExprInner::IfExpr(node) }
 }
-impl From<BreakStmt> for PrimaryExprInner {
-    fn from(node: BreakStmt) -> PrimaryExprInner {
+impl From<BreakStmt> for PrimaryExprInner
+{
+    fn from(node: BreakStmt) -> PrimaryExprInner
+    {
         PrimaryExprInner::BreakStmt(node)
     }
 }
-impl From<ContinueStmt> for PrimaryExprInner {
-    fn from(node: ContinueStmt) -> PrimaryExprInner {
+impl From<ContinueStmt> for PrimaryExprInner
+{
+    fn from(node: ContinueStmt) -> PrimaryExprInner
+    {
         PrimaryExprInner::ContinueStmt(node)
     }
 }
-impl From<ReturnStmt> for PrimaryExprInner {
-    fn from(node: ReturnStmt) -> PrimaryExprInner {
+impl From<ReturnStmt> for PrimaryExprInner
+{
+    fn from(node: ReturnStmt) -> PrimaryExprInner
+    {
         PrimaryExprInner::ReturnStmt(node)
     }
 }
-impl AstNode for PrimaryExprInner {
-    fn can_cast(kind: SyntaxKind) -> bool {
+impl AstNode for PrimaryExprInner
+{
+    fn can_cast(kind: SyntaxKind) -> bool
+    {
         match kind {
             TUPLE_EXPR | ARR_EXPR | BLOCK | PATH | LIT_VAL | IF_EXPR
             | BREAK_STMT | CONTINUE_STMT | RETURN_STMT => true,
@@ -1353,7 +1409,8 @@ impl AstNode for PrimaryExprInner {
         }
     }
 
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
+    fn cast(syntax: SyntaxNode) -> Option<Self>
+    {
         let res = match syntax.kind() {
             TUPLE_EXPR => PrimaryExprInner::TupleExpr(TupleExpr { syntax }),
             ARR_EXPR => PrimaryExprInner::ArrExpr(ArrExpr { syntax }),
@@ -1371,7 +1428,8 @@ impl AstNode for PrimaryExprInner {
         Some(res)
     }
 
-    fn syntax(&self) -> &SyntaxNode {
+    fn syntax(&self) -> &SyntaxNode
+    {
         match self {
             PrimaryExprInner::TupleExpr(it) => &it.syntax,
             PrimaryExprInner::ArrExpr(it) => &it.syntax,
@@ -1385,193 +1443,269 @@ impl AstNode for PrimaryExprInner {
         }
     }
 }
-impl std::fmt::Display for Stmt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for Stmt
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for LitValInner {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for LitValInner
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for Expr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for Expr
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for PrimaryExprInner {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for PrimaryExprInner
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for Root {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for Root
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for ImportStmt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for ImportStmt
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for ImportTarget {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for ImportTarget
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for StringLit {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for StringLit
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for Name {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for Name
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for NumberLit {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for NumberLit
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for BooleanLit {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for BooleanLit
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for LitVal {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for LitVal
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for FnDef {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for FnDef
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for Block {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for Block
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for ExprStmt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for ExprStmt
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for DeclarationStmt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for DeclarationStmt
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for WhileStmt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for WhileStmt
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for ForStmt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for ForStmt
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for BinExpr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for BinExpr
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for TupleExpr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for TupleExpr
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for ArrExpr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for ArrExpr
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for PrimaryExpr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for PrimaryExpr
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for Path {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for Path
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for IfExpr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for IfExpr
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for BreakStmt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for BreakStmt
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for ContinueStmt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for ContinueStmt
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for ReturnStmt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for ReturnStmt
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for PathFrag {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for PathFrag
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for FnCallExpr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for FnCallExpr
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for FnCallArgs {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for FnCallArgs
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for MethodCallExpr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for MethodCallExpr
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for PrefixUnaryExpr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for PrefixUnaryExpr
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for IndexExpr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for IndexExpr
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for IndexExprBrackets {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for IndexExprBrackets
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for MemberAccessExpr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for MemberAccessExpr
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for IfBranch {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for IfBranch
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for ElseIfBranch {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for ElseIfBranch
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for ElseBranch {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for ElseBranch
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+    {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }

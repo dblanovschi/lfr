@@ -1,14 +1,15 @@
 use std::convert::TryInto;
 use std::ops::Range;
 
-use lfr_stdx::Let;
+use lfr_stdx::With;
 use lfr_syntax::span::Span;
 use lfr_syntax::syntax_kind::SyntaxKind;
 use lfr_syntax::T;
 use logos::Logos;
 
 #[derive(Logos, Copy, Clone, Debug, PartialEq, PartialOrd, Eq)]
-pub enum Tk {
+pub enum Tk
+{
     #[regex(r#"[a-zA-Z_][a-zA-Z0-9_]*"#)]
     Ident,
     #[regex(r#"([1-9][0-9]*|0x[0-9a-fA-F]+|0b[01]+|0[0-7]+|0)[uU]?[lL]?"#)]
@@ -93,8 +94,10 @@ pub enum Tk {
     #[regex(r"/\*([^*]|\*+[^*/])*\*?")]
     Error,
 }
-impl From<Tk> for SyntaxKind {
-    fn from(tk: Tk) -> Self {
+impl From<Tk> for SyntaxKind
+{
+    fn from(tk: Tk) -> Self
+    {
         use SyntaxKind::*;
         match tk {
             Tk::Ident => T![ident],
@@ -142,27 +145,31 @@ impl From<Tk> for SyntaxKind {
     }
 }
 #[allow(missing_debug_implementations)]
-pub struct Lexer<'a> {
+pub struct Lexer<'a>
+{
     lexer: logos::SpannedIter<'a, Tk>,
 }
-impl<'a> Lexer<'a> {
-    pub(crate) fn new(s: &'a str) -> Self {
+impl<'a> Lexer<'a>
+{
+    pub(crate) fn new(s: &'a str) -> Self
+    {
         let lexer = Tk::lexer(s).spanned();
         Self { lexer }
     }
 }
-impl<'a> Iterator for Lexer<'a> {
+impl<'a> Iterator for Lexer<'a>
+{
     type Item = (SyntaxKind, Span);
 
-    fn next(&mut self) -> Option<Self::Item> {
+    fn next(&mut self) -> Option<Self::Item>
+    {
         self.lexer.next().map(|(token, span)| {
-            (
-                token.into(),
-                span.let_(|it| -> Range<u32> {
-                    it.start.try_into().unwrap()..it.end.try_into().unwrap()
-                })
-                .into(),
-            )
-        })
+                             (token.into(),
+                              span.with(|it| -> Range<u32> {
+                                      it.start.try_into().unwrap()
+                                      ..it.end.try_into().unwrap()
+                                  })
+                                  .into())
+                         })
     }
 }

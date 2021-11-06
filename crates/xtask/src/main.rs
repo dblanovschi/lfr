@@ -1,11 +1,13 @@
 use clap::Parser;
 
 #[derive(Parser, Debug)]
-enum Command {
+enum Command
+{
     GenSyntax,
 }
 
-fn main() {
+fn main()
+{
     let cmd = Command::parse();
     match cmd {
         Command::GenSyntax => {

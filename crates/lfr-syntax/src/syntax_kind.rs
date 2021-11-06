@@ -1,3 +1,6 @@
 mod generated;
 
-pub use generated::{SyntaxKind, T};
+pub use generated::{
+    SyntaxKind,
+    T,
+};

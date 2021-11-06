@@ -5,7 +5,8 @@
 /// The kind of syntax node, e.g. `IDENT`, `USE_KW`, or `STRUCT`.
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 #[repr(u16)]
-pub enum SyntaxKind {
+pub enum SyntaxKind
+{
     #[doc(hidden)]
     TOMBSTONE,
     #[doc(hidden)]
@@ -118,8 +119,10 @@ pub enum SyntaxKind {
     __LAST,
 }
 use self::SyntaxKind::*;
-impl SyntaxKind {
-    pub fn is_keyword(self) -> bool {
+impl SyntaxKind
+{
+    pub fn is_keyword(self) -> bool
+    {
         match self {
             FN_KW | THIS_KW | WHILE_KW | FOR_KW | IN_KW | CONTINUE_KW
             | BREAK_KW | RETURN_KW | IF_KW | ELSE_KW | LET_KW | TRUE_KW
@@ -128,7 +131,8 @@ impl SyntaxKind {
         }
     }
 
-    pub fn is_punct(self) -> bool {
+    pub fn is_punct(self) -> bool
+    {
         match self {
             SEMICOLON | COMMA | L_PAREN | R_PAREN | L_CURLY | R_CURLY
             | L_BRACK | R_BRACK | L_ANGLE | R_ANGLE | DOT | COLON | COLON2
@@ -141,14 +145,16 @@ impl SyntaxKind {
         }
     }
 
-    pub fn is_literal(self) -> bool {
+    pub fn is_literal(self) -> bool
+    {
         match self {
             INT_NUMBER | FLOAT_NUMBER | CHAR | STR | MULTILINE_STR => true,
             _ => false,
         }
     }
 
-    pub fn from_keyword(ident: &str) -> Option<SyntaxKind> {
+    pub fn from_keyword(ident: &str) -> Option<SyntaxKind>
+    {
         let kw = match ident {
             "fn" => FN_KW,
             "this" => THIS_KW,
@@ -170,7 +176,8 @@ impl SyntaxKind {
         Some(kw)
     }
 
-    pub fn from_char(c: char) -> Option<SyntaxKind> {
+    pub fn from_char(c: char) -> Option<SyntaxKind>
+    {
         let tok = match c {
             ';' => SEMICOLON,
             ',' => COMMA,

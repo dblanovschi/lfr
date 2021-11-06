@@ -4,7 +4,8 @@ use lfr_syntax::syntax_kind::SyntaxKind;
 /// A structure to hold data about a forward token,
 /// resulted from a query like "find the next token that is not a newline".
 #[derive(Copy, Clone, Debug)]
-pub struct ForwardToken {
+pub struct ForwardToken
+{
     /// The token kind.
     pub kind: SyntaxKind,
 
@@ -20,25 +21,25 @@ pub struct ForwardToken {
     pub(crate) state: usize,
 }
 
-impl Default for ForwardToken {
-    fn default() -> Self {
-        Self {
-            kind: SyntaxKind::EOF,
-            offset: 0,
-            state: 0,
-        }
+impl Default for ForwardToken
+{
+    fn default() -> Self
+    {
+        Self { kind:   SyntaxKind::EOF,
+               offset: 0,
+               state:  0, }
     }
 }
 
-impl PartialEq<SyntaxKind> for ForwardToken {
-    fn eq(&self, kind: &SyntaxKind) -> bool {
-        self.kind == *kind
-    }
+impl PartialEq<SyntaxKind> for ForwardToken
+{
+    fn eq(&self, kind: &SyntaxKind) -> bool { self.kind == *kind }
 }
 
 /// Describes a query to the token source.
 #[derive(Copy, Clone, Debug)]
-pub enum FindProperty<'a> {
+pub enum FindProperty<'a>
+{
     /// Query: find the next token such that its kind is in `.0`
     In(&'a [SyntaxKind]),
     /// Query: find the next token such that its kind is not in `.0`
@@ -50,7 +51,8 @@ pub enum FindProperty<'a> {
 }
 
 /// A source we get the tokens from.
-pub trait TokenSource {
+pub trait TokenSource
+{
     /// Get the current token.
     fn current(&self) -> Token;
     /// Look ahead at the `n`th token.
@@ -68,9 +70,10 @@ pub trait TokenSource {
 
 /// A token
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct Token {
+pub struct Token
+{
     /// The kind of this token.
     pub syntax_kind: SyntaxKind,
     /// The size of the text in the token.
-    pub len: TextSize,
+    pub len:         TextSize,
 }

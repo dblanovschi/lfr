@@ -1,15 +1,20 @@
 use std::sync::Arc;
 
-use lfr_base_db::{impl_intern_key, salsa};
+use lfr_base_db::{
+    impl_intern_key,
+    salsa,
+};
 
 use crate::db;
 
-trait Intern {
+trait Intern
+{
     type ID;
     fn intern(self, db: &dyn db::DefDatabase) -> Self::ID;
 }
 
-pub trait Lookup {
+pub trait Lookup
+{
     type Data;
     fn lookup(&self, db: &dyn db::DefDatabase) -> Self::Data;
 }
@@ -18,18 +23,22 @@ macro_rules! impl_intern {
     ($id:ident, $loc:ident, $intern:ident, $lookup:ident) => {
         impl_intern_key!($id);
 
-        impl Intern for $loc {
+        impl Intern for $loc
+        {
             type ID = $id;
 
-            fn intern(self, db: &dyn db::DefDatabase) -> $id {
+            fn intern(self, db: &dyn db::DefDatabase) -> $id
+            {
                 db.$intern(self)
             }
         }
 
-        impl Lookup for $id {
+        impl Lookup for $id
+        {
             type Data = $loc;
 
-            fn lookup(&self, db: &dyn db::DefDatabase) -> $loc {
+            fn lookup(&self, db: &dyn db::DefDatabase) -> $loc
+            {
                 db.$lookup(*self)
             }
         }

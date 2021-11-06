@@ -11,6 +11,7 @@
 { action
 , buildInputs ? (pkgs: [ ])
 , extraToolchainComponents ? [ ]
+, toolchainTargets ? (targets: [ ])
 }:
 
 { utils ? import ./utils.nix
@@ -42,7 +43,6 @@ thor.rust.mkRustDerivation {
   src = builtins.path {
     path = ./.;
     filter = path: type:
-      # type != "directory" ||
       ! builtins.any (t: t == builtins.baseNameOf path) [
         "target"
         "result"
@@ -52,7 +52,10 @@ thor.rust.mkRustDerivation {
       ];
   };
 
-  toolchain = "nightly-musl";
+  toolchain = {
+    toolchain = nightly;
+    inherit (toolchainTargets targets) targets defaultTarget;
+  };
 
   inherit extraToolchainComponents;
 
@@ -66,13 +69,33 @@ thor.rust.mkRustDerivation {
 
   enableIncremental = true;
 
-  shellAliases = {
-    cr = "cargo r";
-    crr = "cargo r --release";
-    cb = "cargo b";
-    cbr = "cargo b --release";
-    cf = "cargo fmt -- --emit=files";
-  };
+  shellAliases =
+    let
+      ctalias = alias: {
+        inherit alias;
+        # has to modify env before running cargo to run doctests
+        isCargoTest = true;
+      };
+    in
+    {
+      # cargo run
+      cr = "cargo run";
+      crr = "cargo run --release";
+
+      # cargo build
+      cb = "cargo build";
+      cbr = "cargo build --release";
+
+      # cargo test
+      ct = ctalias "cargo test";
+      ctr = ctalias "cargo test --release";
+      ctw = ctalias "cargo test --workspace";
+      ctwr = ctalias "cargo test --workspace --release";
+
+      # cargo fmt
+      cf = "cargo fmt --workspace -- --emit=files";
+      cx = "cargo xtask";
+    };
 
   phases = {
     configurePhase = ''

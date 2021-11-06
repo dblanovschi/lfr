@@ -2,42 +2,52 @@ use lfr_stdx::TakeIfUnless;
 use lfr_syntax::rowan::TextSize;
 use lfr_syntax::span::Span;
 use lfr_syntax::syntax_kind::SyntaxKind::EOF;
-use lfr_syntax::{SyntaxKind, T};
+use lfr_syntax::{
+    SyntaxKind,
+    T,
+};
 
-use super::{FindProperty, ForwardToken, Token, TokenSource};
+use super::{
+    FindProperty,
+    ForwardToken,
+    Token,
+    TokenSource,
+};
 use crate::parser::IsTrivia;
 
 ///
 #[derive(Debug)]
-pub struct LexerWrap {
-    pos: usize,
+pub struct LexerWrap
+{
+    pos:    usize,
     tokens: Vec<(Token, TextSize)>,
 }
 
-impl LexerWrap {
+impl LexerWrap
+{
     /// Creates a new `LexerWrap` from the list of tokens and starts at token
     /// indexed `0`
-    pub fn new(tokens: &[Token]) -> Self {
+    pub fn new(tokens: &[Token]) -> Self
+    {
         let mut text_off = 0.into();
-        let tokens = tokens
-            .iter()
-            .copied()
-            .filter_map(|it| {
-                let tk = (it, text_off);
-                text_off += it.len;
-                tk.take_unless(|tk| tk.0.syntax_kind.is_trivia())
-            })
-            .collect();
+        let tokens = tokens.iter()
+                           .copied()
+                           .filter_map(|it| {
+                               let tk = (it, text_off);
+                               text_off += it.len;
+                               tk.take_unless(|tk| tk.0.syntax_kind.is_trivia())
+                           })
+                           .collect();
         Self { pos: 0, tokens }
     }
 }
 
-impl TokenSource for LexerWrap {
-    fn current(&self) -> Token {
-        self.lookahead(0)
-    }
+impl TokenSource for LexerWrap
+{
+    fn current(&self) -> Token { self.lookahead(0) }
 
-    fn lookahead(&self, n: usize) -> Token {
+    fn lookahead(&self, n: usize) -> Token
+    {
         self.tokens
             .get(self.pos + n)
             .copied()
@@ -48,45 +58,46 @@ impl TokenSource for LexerWrap {
             })
     }
 
-    fn bump(&mut self) {
+    fn bump(&mut self)
+    {
         if self.pos < self.tokens.len() {
             self.pos += 1;
         }
     }
 
-    fn find(&self, find_property: FindProperty) -> ForwardToken {
-        const NOT_FOUND: ForwardToken = ForwardToken {
-            kind: EOF,
-            offset: 0,
-            state: 0,
-        };
+    fn find(&self, find_property: FindProperty) -> ForwardToken
+    {
+        const NOT_FOUND: ForwardToken = ForwardToken { kind:   EOF,
+                                                       offset: 0,
+                                                       state:  0, };
         if self.tokens.len() <= self.pos {
-            return NOT_FOUND;
+            return NOT_FOUND
         }
 
-        fn at_composite2(
-            tokens: &[(Token, TextSize)],
-            kind1: SyntaxKind,
-            kind2: SyntaxKind,
-        ) -> bool {
+        fn at_composite2(tokens: &[(Token, TextSize)],
+                         kind1: SyntaxKind,
+                         kind2: SyntaxKind)
+                         -> bool
+        {
             tokens.len() >= 2
-                && tokens[0].0.syntax_kind == kind1
-                && tokens[1].0.syntax_kind == kind2
+            && tokens[0].0.syntax_kind == kind1
+            && tokens[1].0.syntax_kind == kind2
         }
 
-        fn at_composite3(
-            tokens: &[(Token, TextSize)],
-            kind1: SyntaxKind,
-            kind2: SyntaxKind,
-            kind3: SyntaxKind,
-        ) -> bool {
+        fn at_composite3(tokens: &[(Token, TextSize)],
+                         kind1: SyntaxKind,
+                         kind2: SyntaxKind,
+                         kind3: SyntaxKind)
+                         -> bool
+        {
             tokens.len() >= 3
-                && tokens[0].0.syntax_kind == kind1
-                && tokens[1].0.syntax_kind == kind2
-                && tokens[2].0.syntax_kind == kind3
+            && tokens[0].0.syntax_kind == kind1
+            && tokens[1].0.syntax_kind == kind2
+            && tokens[2].0.syntax_kind == kind3
         }
 
-        fn at(tokens: &[(Token, TextSize)], kind: SyntaxKind) -> bool {
+        fn at(tokens: &[(Token, TextSize)], kind: SyntaxKind) -> bool
+        {
             // TAG: composites
             match kind {
                 T![&&] => at_composite2(tokens, T![&], T![&]),
@@ -116,11 +127,9 @@ impl TokenSource for LexerWrap {
                     let t = &self.tokens[tind..];
 
                     if let Some(&kind) = kinds.iter().find(|&&it| at(t, it)) {
-                        return ForwardToken {
-                            kind,
-                            offset: tind - self.pos,
-                            state: self.pos,
-                        };
+                        return ForwardToken { kind,
+                                              offset: tind - self.pos,
+                                              state: self.pos }
                     }
                 }
 
@@ -131,11 +140,9 @@ impl TokenSource for LexerWrap {
                     let t = &self.tokens[tind..];
 
                     if let None = kinds.iter().find(|&&it| at(t, it)) {
-                        return ForwardToken {
-                            kind: t[0].0.syntax_kind,
-                            offset: tind - self.pos,
-                            state: self.pos,
-                        };
+                        return ForwardToken { kind:   t[0].0.syntax_kind,
+                                              offset: tind - self.pos,
+                                              state:  self.pos, }
                     }
                 }
 
@@ -146,11 +153,9 @@ impl TokenSource for LexerWrap {
                     let t = &self.tokens[tind..];
 
                     if at(t, kind) {
-                        return ForwardToken {
-                            kind: t[0].0.syntax_kind,
-                            offset: tind - self.pos,
-                            state: self.pos,
-                        };
+                        return ForwardToken { kind:   t[0].0.syntax_kind,
+                                              offset: tind - self.pos,
+                                              state:  self.pos, }
                     }
                 }
 
@@ -161,11 +166,9 @@ impl TokenSource for LexerWrap {
                     let t = &self.tokens[tind..];
 
                     if !at(t, kind) {
-                        return ForwardToken {
-                            kind: t[0].0.syntax_kind,
-                            offset: tind - self.pos,
-                            state: self.pos,
-                        };
+                        return ForwardToken { kind:   t[0].0.syntax_kind,
+                                              offset: tind - self.pos,
+                                              state:  self.pos, }
                     }
                 }
 
@@ -174,9 +177,10 @@ impl TokenSource for LexerWrap {
         }
     }
 
-    fn bump_to(&self, forward_token: ForwardToken) -> usize {
+    fn bump_to(&self, forward_token: ForwardToken) -> usize
+    {
         if forward_token.kind == EOF {
-            return 0;
+            return 0
         }
 
         forward_token.state + forward_token.offset - self.pos
