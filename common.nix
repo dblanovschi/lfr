@@ -93,7 +93,7 @@ thor.rust.mkRustDerivation {
       ctwr = ctalias "cargo test --workspace --release";
 
       # cargo fmt
-      cf = "cargo fmt --workspace -- --emit=files";
+      cf = "cargo fmt -- --emit=files";
       cx = "cargo xtask";
     };
 
